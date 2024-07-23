@@ -850,7 +850,7 @@
 
     <div class="doc doc-contents first">
 
-      <p>Internal math tools.</p>
+      <p>Math tools.</p>
 
 
 
@@ -898,7 +898,7 @@ For more technical details, see https://peps.python.org/pep-0485/#behavior-near-
             <td><code>value</code></td>
             <td class="doc-param-details">
               <div class="doc-md-description">
-                <p>the floating point value to compare to.</p>
+                <p>The floating point value to compare to.</p>
               </div>
               <p>
                   <span class="doc-param-annotation">
@@ -912,7 +912,7 @@ For more technical details, see https://peps.python.org/pep-0485/#behavior-near-
             <td><code>abs_tol</code></td>
             <td class="doc-param-details">
               <div class="doc-md-description">
-                <p>the minimum absolute tolerance. Defaults to 1e-9.</p>
+                <p>The minimum absolute tolerance. Defaults to 1e-9.</p>
               </div>
               <p>
                   <span class="doc-param-annotation">
@@ -946,7 +946,7 @@ For more technical details, see https://peps.python.org/pep-0485/#behavior-near-
             </td>
             <td class="doc-returns-details">
               <div class="doc-md-description">
-                <p>whether the floating point value is close to zero.</p>
+                <p>Whether the floating point value is close to zero.</p>
               </div>
             </td>
           </tr>
@@ -980,11 +980,11 @@ For more technical details, see https://peps.python.org/pep-0485/#behavior-near-
 </span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15"></a><span class="sd">    For more technical details, see https://peps.python.org/pep-0485/#behavior-near-zero</span>
 </span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16"></a>
 </span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17"></a><span class="sd">    Args:</span>
-</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18"></a><span class="sd">        value: the floating point value to compare to.</span>
-</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19"></a><span class="sd">        abs_tol: the minimum absolute tolerance. Defaults to 1e-9.</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18"></a><span class="sd">        value: The floating point value to compare to.</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19"></a><span class="sd">        abs_tol: The minimum absolute tolerance. Defaults to 1e-9.</span>
 </span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20"></a>
 </span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21"></a><span class="sd">    Returns:</span>
-</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22"></a><span class="sd">        whether the floating point value is close to zero.</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22"></a><span class="sd">        Whether the floating point value is close to zero.</span>
 </span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23"></a><span class="sd">    &quot;&quot;&quot;</span>
 </span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24"></a>    <span class="n">zero</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
 </span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25"></a>    <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="n">value</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="n">zero</span><span class="p">,</span> <span class="n">abs_tol</span><span class="o">=</span><span class="n">abs_tol</span><span class="p">)</span>

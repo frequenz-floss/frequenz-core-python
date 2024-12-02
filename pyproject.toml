@@ -150,11 +150,14 @@ disable = [
   "unused-variable",
   # Checked by mypy
   "no-member",
+  "possibly-used-before-assignment",
+  "no-name-in-module",
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["tests", "src"]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 required_plugins = ["pytest-asyncio", "pytest-mock"]
 
 [tool.mypy]

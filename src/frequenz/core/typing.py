@@ -125,7 +125,7 @@ def disable_init(
     def decorator(inner_cls: TypeT) -> TypeT:
         return cast(
             TypeT,
-            _NoInitConstructibleMeta(
+            NoInitConstructibleMeta(
                 inner_cls.__name__,
                 inner_cls.__bases__,
                 dict(inner_cls.__dict__),
@@ -138,7 +138,7 @@ def disable_init(
     return decorator(cls)
 
 
-class _NoInitConstructibleMeta(type):
+class NoInitConstructibleMeta(type):
     """A metaclass that disables the __init__ constructor."""
 
     # We need to use noqa here because pydoclint can't figure out that

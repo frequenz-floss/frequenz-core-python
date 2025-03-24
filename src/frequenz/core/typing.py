@@ -43,8 +43,7 @@ def disable_init(
     as the class is parsed by the Python interpreter. It will also raise a `TypeError`
     when the `__init__` method is called.
 
-    To create an instance you must provide a factory method, using `__new__` to create
-    the instance and calling `super().__init__(self)` explicitly to initialize it.
+    To create an instance you must provide a factory method, using `__new__`.
 
     Warning:
         This decorator will use a custom metaclass to disable the `__init__` constructor
@@ -65,7 +64,6 @@ def disable_init(
             @classmethod
             def new(cls, value: int = 1) -> Self:
                 self = cls.__new__(cls)
-                super().__init__(self)
                 self.value = value
                 return self
 
@@ -102,9 +100,7 @@ def disable_init(
         class MyClass:
             @classmethod
             def new(cls) -> Self:
-                self = cls.__new__(cls)
-                super().__init__(self)
-                return self
+                return cls.__new__(cls)
 
         try:
             instance = MyClass()

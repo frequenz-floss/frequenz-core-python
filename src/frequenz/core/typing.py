@@ -165,7 +165,7 @@ class _NoInitConstructibleMeta(type):
             TypeError: If the class provides a default constructor.
         """
         if "__init__" in namespace:
-            raise _get_no_init_constructible_error(name, bases, kwargs)
+            raise _get_no_init_constructible_error(name, bases, **kwargs)
         return super().__new__(mcs, name, bases, namespace)
 
     def __init__(
@@ -194,12 +194,12 @@ class _NoInitConstructibleMeta(type):
         raise _get_no_init_constructible_error(
             cls.__name__,
             cls.__bases__,
-            {"no_init_constructible_error": cls._no_init_constructible_error},
+            no_init_constructible_error=cls._no_init_constructible_error,
         )
 
 
 def _get_no_init_constructible_error(
-    name: str, bases: tuple[type, ...], kwargs: Any
+    name: str, bases: tuple[type, ...], **kwargs: Any
 ) -> Exception:
     error = kwargs.get("no_init_constructible_error")
     if error is None:

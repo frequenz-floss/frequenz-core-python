@@ -3,9 +3,14 @@
 
 """Type hints and utility functions for type checking and types.
 
-For now this module only provides a decorator to disable the `__init__` constructor of
-a class, to force the use of a factory method to create instances. See
-[disable_init][frequenz.core.typing.disable_init] for more information.
+This module provides a decorator to disable the `__init__` constructor of a class, to
+force the use of a factory method to create instances. See
+[`@disable_init`][frequenz.core.typing.disable_init] for more information.
+
+It also provides a metaclass used by the decorator to disable the `__init__`:
+[`NoInitConstructibleMeta`][frequenz.core.typing.NoInitConstructibleMeta]. This is
+useful mostly for disabling `__init__` while having to use another metaclass too (like
+[`abc.ABCMeta`][abc.ABCMeta]).
 """
 
 from collections.abc import Callable
@@ -43,13 +48,19 @@ def disable_init(
     as the class is parsed by the Python interpreter. It will also raise a `TypeError`
     when the `__init__` method is called.
 
-    To create an instance you must provide a factory method, using `__new__` to create
-    the instance and calling `super().__init__(self)` explicitly to initialize it.
+    To create an instance you must provide a factory method, using `__new__`.
 
     Warning:
         This decorator will use a custom metaclass to disable the `__init__` constructor
         of the class, so if your class already uses a custom metaclass, you should be
-        aware of potential conflicts.
+        aware of potential conflicts. See
+        [`NoInitConstructibleMeta`][frequenz.core.typing.NoInitConstructibleMeta] for an
+        example on how to use more than one metaclass.
+
+        It is also recommended to apply this decorator only to classes inheriting from
+        `object` directly (i.e. not explicitly inheriting from any other classes), as
+        things can also get tricky when applying the constructor to a sub-class for the
+        first time.
 
     Example: Basic example defining a class with a factory method
         To be able to type hint the class correctly, you can declare the instance
@@ -65,7 +76,6 @@ def disable_init(
             @classmethod
             def new(cls, value: int = 1) -> Self:
                 self = cls.__new__(cls)
-                super().__init__(self)
                 self.value = value
                 return self
 
@@ -102,9 +112,7 @@ def disable_init(
         class MyClass:
             @classmethod
             def new(cls) -> Self:
-                self = cls.__new__(cls)
-                super().__init__(self)
-                return self
+                return cls.__new__(cls)
 
         try:
             instance = MyClass()
@@ -125,7 +133,7 @@ def disable_init(
     def decorator(inner_cls: TypeT) -> TypeT:
         return cast(
             TypeT,
-            _NoInitConstructibleMeta(
+            NoInitConstructibleMeta(
                 inner_cls.__name__,
                 inner_cls.__bases__,
                 dict(inner_cls.__dict__),
@@ -138,8 +146,95 @@ def disable_init(
     return decorator(cls)
 
 
-class _NoInitConstructibleMeta(type):
-    """A metaclass that disables the __init__ constructor."""
+class NoInitConstructibleMeta(type):
+    """A metaclass that disables the `__init__` constructor.
+
+    This metaclass can be used to disable the `__init__` constructor of a class. It is
+    intended to be used with classes that don't provide a default constructor and
+    require the use of a factory method to create instances.
+
+    When marking a class using this metaclass, the class cannot be even declared with a
+    `__init__` method, as it will raise a `TypeError` when the class is created, as soon
+    as the class is parsed by the Python interpreter. It will also raise a `TypeError`
+    when the `__init__` method is called.
+
+    To create an instance you must provide a factory method, using `__new__`.
+
+    Warning:
+        It is also recommended to apply this metaclass only to classes inheriting from
+        `object` directly (i.e. not explicitly inheriting from any other classes), as
+        things can also get tricky when applying the constructor to a sub-class for the
+        first time.
+
+    Example: Basic example defining a class with a factory method
+        To be able to type hint the class correctly, you can declare the instance
+        attributes in the class body, and then use a factory method to create instances.
+
+        ```python
+        from typing import Self
+
+        class MyClass(metaclass=NoInitConstructibleMeta):
+            value: int
+
+            @classmethod
+            def new(cls, value: int = 1) -> Self:
+                self = cls.__new__(cls)
+                self.value = value
+                return self
+
+        instance = MyClass.new()
+
+        # Calling the default constructor (__init__) will raise a TypeError
+        try:
+            instance = MyClass()
+        except TypeError as e:
+            print(e)
+        ```
+
+        Hint:
+            The [`@disable_init`][frequenz.core.typing.disable_init] decorator is a more
+            convenient way to use this metaclass.
+
+    Example: Example combining with other metaclass
+        A typical case where you might want this is to combine with
+        [`abc.ABCMeta`][abc.ABCMeta] to create an abstract class that doesn't provide a
+        default constructor.
+
+        ```python
+        from abc import ABCMeta, abstractmethod
+        from typing import Self
+
+        class NoInitConstructibleABCMeta(ABCMeta, NoInitConstructibleMeta):
+            pass
+
+        class MyAbstractClass(metaclas=NoInitConstructibleABCMeta):
+            @abstractmethod
+            def do_something(self) -> None:
+                ...
+
+        class MyClass(MyAbstractClass):
+            value: int
+
+            @classmethod
+            def new(cls, value: int = 1) -> Self:
+                self = cls.__new__(cls)
+                self.value = value
+                return self
+
+            def do_something(self) -> None:
+                print("Doing something")
+
+        instance = MyClass.new()
+        instance.do_something()
+
+        # Calling the default constructor (__init__) will raise a TypeError
+        try:
+            instance = MyClass()
+        except TypeError as e:
+            print(e)
+        ```
+
+    """
 
     # We need to use noqa here because pydoclint can't figure out that
     # _get_no_init_constructible_error() returns a TypeError.
@@ -165,7 +260,7 @@ class _NoInitConstructibleMeta(type):
             TypeError: If the class provides a default constructor.
         """
         if "__init__" in namespace:
-            raise _get_no_init_constructible_error(name, bases, kwargs)
+            raise _get_no_init_constructible_error(name, bases, **kwargs)
         return super().__new__(mcs, name, bases, namespace)
 
     def __init__(
@@ -194,12 +289,12 @@ class _NoInitConstructibleMeta(type):
         raise _get_no_init_constructible_error(
             cls.__name__,
             cls.__bases__,
-            {"no_init_constructible_error": cls._no_init_constructible_error},
+            no_init_constructible_error=cls._no_init_constructible_error,
         )
 
 
 def _get_no_init_constructible_error(
-    name: str, bases: tuple[type, ...], kwargs: Any
+    name: str, bases: tuple[type, ...], **kwargs: Any
 ) -> Exception:
     error = kwargs.get("no_init_constructible_error")
     if error is None:

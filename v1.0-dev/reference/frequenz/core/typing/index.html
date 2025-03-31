@@ -1059,11 +1059,12 @@
         <p>Type hints and utility functions for type checking and types.</p>
 <p>This module provides a decorator to disable the <code>__init__</code> constructor of a class, to
 force the use of a factory method to create instances. See
-<a class="autorefs autorefs-internal" href="#frequenz.core.typing.disable_init"><code>@disable_init</code></a> for more information.</p>
+<a class="autorefs autorefs-internal" title="frequenz.core.typing.disable_init" href="#frequenz.core.typing.disable_init"><code>@disable_init</code></a> for more information.</p>
 <p>It also provides a metaclass used by the decorator to disable the <code>__init__</code>:
-<a class="autorefs autorefs-internal" href="#frequenz.core.typing.NoInitConstructibleMeta"><code>NoInitConstructibleMeta</code></a>. This is
+<a class="autorefs autorefs-internal" title="frequenz.core.typing.NoInitConstructibleMeta" href="#frequenz.core.typing.NoInitConstructibleMeta"><code>NoInitConstructibleMeta</code></a>. This is
 useful mostly for disabling <code>__init__</code> while having to use another metaclass too (like
 <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/abc.html#abc.ABCMeta"><code>abc.ABCMeta</code></a>).</p>
+
 
 
 
@@ -1099,6 +1100,7 @@ useful mostly for disabling <code>__init__</code> while having to use another me
     <div class="doc doc-contents ">
 
         <p>A type variable that is bound to a type.</p>
+
     </div>
 
 </div>
@@ -1163,7 +1165,7 @@ attributes in the class body, and then use a factory method to create instances.
 </span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
 </span></code></pre></div>
 <p>Hint:
-    The <a class="autorefs autorefs-internal" href="#frequenz.core.typing.disable_init"><code>@disable_init</code></a> decorator is a more
+    The <a class="autorefs autorefs-internal" title="frequenz.core.typing.disable_init" href="#frequenz.core.typing.disable_init"><code>@disable_init</code></a> decorator is a more
     convenient way to use this metaclass.</p>
 </details>
 
@@ -1205,6 +1207,7 @@ default constructor.</p>
 </span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
 </span></code></pre></div>
 </details>
+
 
 
 
@@ -1607,6 +1610,7 @@ default constructor.</p>
       </tbody>
     </table>
 
+
             <details class="quote">
               <summary>Source code in <code>frequenz/core/typing.py</code></summary>
               <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-279">279</a></span>
@@ -1663,6 +1667,7 @@ default constructor.</p>
     <div class="doc doc-contents ">
 
         <p>Initialize the new class.</p>
+
 
             <details class="quote">
               <summary>Source code in <code>frequenz/core/typing.py</code></summary>
@@ -1840,6 +1845,7 @@ default constructor.</p>
       </tbody>
     </table>
 
+
             <details class="quote">
               <summary>Source code in <code>frequenz/core/typing.py</code></summary>
               <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-241">241</a></span>
@@ -1915,14 +1921,54 @@ default constructor.</p>
           <div class="doc-overloads">
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">disable_init</span><span class="p">(</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="bp">cls</span><span class="p">:</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">error</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#Exception">Exception</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[</span><span class="n"><a class="autorefs autorefs-internal" title="frequenz.core.typing.TypeT" href="#frequenz.core.typing.TypeT">TypeT</a></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-internal" title="frequenz.core.typing.TypeT" href="#frequenz.core.typing.TypeT">TypeT</a></span><span class="p">]</span>
-</span></code></pre></div><div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">disable_init</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="frequenz.core.typing.TypeT" href="#frequenz.core.typing.TypeT">TypeT</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="frequenz.core.typing.TypeT" href="#frequenz.core.typing.TypeT">TypeT</a></span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[</span><span class="n"><a class="autorefs autorefs-internal" title="frequenz.core.typing.TypeT
+
+
+  
+      module-attribute
+  " href="#frequenz.core.typing.TypeT">TypeT</a></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-internal" title="frequenz.core.typing.TypeT
+
+
+  
+      module-attribute
+  " href="#frequenz.core.typing.TypeT">TypeT</a></span><span class="p">]</span>
+</span></code></pre></div><div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">disable_init</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="frequenz.core.typing.TypeT
+
+
+  
+      module-attribute
+  " href="#frequenz.core.typing.TypeT">TypeT</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="frequenz.core.typing.TypeT
+
+
+  
+      module-attribute
+  " href="#frequenz.core.typing.TypeT">TypeT</a></span>
 </span></code></pre></div>          </div>
 <div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">disable_init</span><span class="p">(</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="bp">cls</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="frequenz.core.typing.TypeT" href="#frequenz.core.typing.TypeT">TypeT</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="bp">cls</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="frequenz.core.typing.TypeT
+
+
+  
+      module-attribute
+  " href="#frequenz.core.typing.TypeT">TypeT</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="o">*</span><span class="p">,</span>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">error</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/exceptions.html#Exception">Exception</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="frequenz.core.typing.TypeT" href="#frequenz.core.typing.TypeT">TypeT</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[</span><span class="n"><a class="autorefs autorefs-internal" title="frequenz.core.typing.TypeT" href="#frequenz.core.typing.TypeT">TypeT</a></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-internal" title="frequenz.core.typing.TypeT" href="#frequenz.core.typing.TypeT">TypeT</a></span><span class="p">]</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="frequenz.core.typing.TypeT
+
+
+  
+      module-attribute
+  " href="#frequenz.core.typing.TypeT">TypeT</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[</span><span class="n"><a class="autorefs autorefs-internal" title="frequenz.core.typing.TypeT
+
+
+  
+      module-attribute
+  " href="#frequenz.core.typing.TypeT">TypeT</a></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-internal" title="frequenz.core.typing.TypeT
+
+
+  
+      module-attribute
+  " href="#frequenz.core.typing.TypeT">TypeT</a></span><span class="p">]</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
@@ -1943,7 +1989,7 @@ when the <code>__init__</code> method is called.</p>
   <p>This decorator will use a custom metaclass to disable the <code>__init__</code> constructor
 of the class, so if your class already uses a custom metaclass, you should be
 aware of potential conflicts. See
-<a class="autorefs autorefs-internal" href="#frequenz.core.typing.NoInitConstructibleMeta"><code>NoInitConstructibleMeta</code></a> for an
+<a class="autorefs autorefs-internal" title="frequenz.core.typing.NoInitConstructibleMeta" href="#frequenz.core.typing.NoInitConstructibleMeta"><code>NoInitConstructibleMeta</code></a> for an
 example on how to use more than one metaclass.</p>
 <p>It is also recommended to apply this decorator only to classes inheriting from
 <code>object</code> directly (i.e. not explicitly inheriting from any other classes), as
@@ -2031,7 +2077,12 @@ attributes in the class body, and then use a factory method to create instances.
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><a class="autorefs autorefs-internal" title="frequenz.core.typing.TypeT" href="#frequenz.core.typing.TypeT">TypeT</a> | None</code>
+                      <code><a class="autorefs autorefs-internal" title="frequenz.core.typing.TypeT
+
+
+  
+      module-attribute
+  " href="#frequenz.core.typing.TypeT">TypeT</a> | None</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -2076,7 +2127,22 @@ attributes in the class body, and then use a factory method to create instances.
           <tr class="doc-section-item">
             <td>
                 <span class="doc-returns-annotation">
-                    <code><a class="autorefs autorefs-internal" title="frequenz.core.typing.TypeT" href="#frequenz.core.typing.TypeT">TypeT</a> | <a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a>[[<a class="autorefs autorefs-internal" title="frequenz.core.typing.TypeT" href="#frequenz.core.typing.TypeT">TypeT</a>], <a class="autorefs autorefs-internal" title="frequenz.core.typing.TypeT" href="#frequenz.core.typing.TypeT">TypeT</a>]</code>
+                    <code><a class="autorefs autorefs-internal" title="frequenz.core.typing.TypeT
+
+
+  
+      module-attribute
+  " href="#frequenz.core.typing.TypeT">TypeT</a> | <a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a>[[<a class="autorefs autorefs-internal" title="frequenz.core.typing.TypeT
+
+
+  
+      module-attribute
+  " href="#frequenz.core.typing.TypeT">TypeT</a>], <a class="autorefs autorefs-internal" title="frequenz.core.typing.TypeT
+
+
+  
+      module-attribute
+  " href="#frequenz.core.typing.TypeT">TypeT</a>]</code>
                 </span>
             </td>
             <td class="doc-returns-details">
@@ -2087,6 +2153,7 @@ attributes in the class body, and then use a factory method to create instances.
           </tr>
       </tbody>
     </table>
+
 
             <details class="quote">
               <summary>Source code in <code>frequenz/core/typing.py</code></summary>

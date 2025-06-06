@@ -4,6 +4,7 @@
 """Timeseries basic types."""
 
 from datetime import datetime, timezone
+from typing import Final
 
-UNIX_EPOCH = datetime.fromtimestamp(0.0, tz=timezone.utc)
+UNIX_EPOCH: Final[datetime] = datetime.fromtimestamp(0.0, tz=timezone.utc)
 """The UNIX epoch (in UTC)."""

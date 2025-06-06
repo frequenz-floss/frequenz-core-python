@@ -2,16 +2,13 @@
 
 ## Summary
 
-<!-- Here goes a general summary of what this release is about -->
+This is the initial release of the Frequenz Core Library, which provides a set of fundamental tools and utilities for Python.
 
-## Upgrading
+The library currently includes:
 
-<!-- Here goes notes on how to upgrade from previous versions, including deprecations and what they should be replaced with -->
+- `datetime`: For utilities related to dates and times.
+* `id`: For creating unique system-wide ID types.
+* `math`: For utilities related to math.
+* `typing`: For type annotations and type-checking utilities.
 
-## New Features
-
-<!-- Here goes the main new features and examples or instructions on how to use them -->
-
-## Bug Fixes
-
-<!-- Here goes notable bug fixes that are worth a special mention or explanation -->
+But more tools will be added in the future.

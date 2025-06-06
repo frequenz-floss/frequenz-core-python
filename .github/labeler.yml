@@ -39,6 +39,14 @@
       - "tests/test_asyncio.py"
       - "tests/asyncio/**"
 
+"part:collections":
+  - changed-files:
+    - any-glob-to-any-file:
+      - "src/frequenz/core/collections.py"
+      - "src/frequenz/core/collections/**"
+      - "tests/test_collections.py"
+      - "tests/collections/**"
+
 "part:datetime":
   - changed-files:
     - any-glob-to-any-file:
@@ -55,6 +63,14 @@
       - "examples/**"
       - LICENSE
 
+"part:id":
+  - changed-files:
+    - any-glob-to-any-file:
+      - "src/frequenz/core/id.py"
+      - "src/frequenz/core/id/**"
+      - "tests/test_id.py"
+      - "tests/id/**"
+
 "part:logging":
   - changed-files:
     - any-glob-to-any-file:
@@ -70,6 +86,14 @@
       - "src/frequenz/core/math/**"
       - "tests/test_math.py"
       - "tests/math/**"
+
+"part:module":
+  - changed-files:
+    - any-glob-to-any-file:
+      - "src/frequenz/core/module.py"
+      - "src/frequenz/core/module/**"
+      - "tests/test_module.py"
+      - "tests/module/**"
 
 "part:tests":
   - changed-files:

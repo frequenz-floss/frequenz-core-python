@@ -6,7 +6,7 @@
 
 import pytest
 
-from frequenz.core.logging import get_public_logger
+from frequenz.core.module import get_public_module_name
 
 
 @pytest.mark.parametrize(
@@ -17,13 +17,13 @@ from frequenz.core.logging import get_public_logger
         ("some.pub._some._priv.public", "some.pub"),
         ("some.pub._some._priv.public._private", "some.pub"),
         ("some._priv.pub", "some"),
-        ("_priv.some.pub", "root"),
+        ("_priv.some.pub", None),
         ("some", "some"),
         ("some._priv", "some"),
-        ("_priv", "root"),
+        ("_priv", None),
     ],
 )
-def test_get_public_logger(module_name: str, expected_logger_name: str) -> None:
+def test_get_public_logger(module_name: str, expected_logger_name: str | None) -> None:
     """Test that the logger name is as expected."""
-    logger = get_public_logger(module_name)
-    assert logger.name == expected_logger_name
+    name = get_public_module_name(module_name)
+    assert name == expected_logger_name

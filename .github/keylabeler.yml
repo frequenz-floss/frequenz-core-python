@@ -13,10 +13,13 @@ caseSensitive: true
 # Explicit keyword mappings to labels. Form of match:label. Required.
 labelMappings:
   "part:asyncio": "part:asyncio"
+  "part:collections": "part:collections"
   "part:datetime": "part:datetime"
   "part:docs": "part:docs"
+  "part:id": "part:id"
   "part:logging": "part:logging"
   "part:math": "part:math"
+  "part:module": "part:module"
   "part:tests": "part:tests"
   "part:tooling": "part:tooling"
   "part:typing": "part:typing"

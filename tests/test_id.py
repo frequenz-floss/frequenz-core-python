@@ -26,6 +26,16 @@ def test_valid() -> None:
     assert int(id_obj) == 42
 
 
+def test_warn_non_unique_prefix() -> None:
+    """Test that using a non-unique prefix raises a warning."""
+    with pytest.warns(UserWarning, match="Prefix 'TEST_ID' is already registered"):
+
+        class _TestDuplicateId(BaseId, str_prefix="TEST_ID"):
+            """A duplicate test ID class with the same prefix as _TestId."""
+
+        _TestDuplicateId(1)
+
+
 def test_negative_raises() -> None:
     """Test that creating a negative ID raises ValueError."""
     with pytest.raises(ValueError, match="_TestId can't be negative"):

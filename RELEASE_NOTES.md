@@ -2,13 +2,16 @@
 
 ## Summary
 
-This is the initial release of the Frequenz Core Library, which provides a set of fundamental tools and utilities for Python.
+<!-- Here goes a general summary of what this release is about -->
 
-The library currently includes:
+## Upgrading
 
-- `datetime`: For utilities related to dates and times.
-* `id`: For creating unique system-wide ID types.
-* `math`: For utilities related to math.
-* `typing`: For type annotations and type-checking utilities.
+<!-- Here goes notes on how to upgrade from previous versions, including deprecations and what they should be replaced with -->
 
-But more tools will be added in the future.
+## New Features
+
+<!-- Here goes the main new features and examples or instructions on how to use them -->
+
+## Bug Fixes
+
+* `BaseId` will now warn instead of raising an exception when a duplicate prefix is detected. This is to fix [a problem with code examples](https://github.com/frequenz-floss/frequenz-repo-config-python/issues/421) being tested using sybil and the class being imported multiple times, which caused the exception to be raised.

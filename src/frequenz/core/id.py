@@ -63,6 +63,7 @@ Example: Creating an ID type with a non-standard name
 
 
 from typing import Any, ClassVar, Self, cast
+from warnings import warn
 
 
 class BaseId:
@@ -105,17 +106,18 @@ class BaseId:
             **kwargs: Forwarded to the parent's __init_subclass__.
 
         Raises:
-            ValueError: If the `str_prefix` is already registered by another
-                ID type.
             TypeError: If `allow_custom_name` is False and the class name
                 does not end with "Id".
         """
         super().__init_subclass__(**kwargs)
 
         if str_prefix in BaseId._registered_prefixes:
-            raise ValueError(
+            # We want to raise an exception here, but currently can't due to
+            # https://github.com/frequenz-floss/frequenz-repo-config-python/issues/421
+            warn(
                 f"Prefix '{str_prefix}' is already registered. "
-                "ID prefixes must be unique."
+                "ID prefixes must be unique.",
+                stacklevel=2,
             )
         BaseId._registered_prefixes.add(str_prefix)
 

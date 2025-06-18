@@ -26,6 +26,14 @@ def test_valid() -> None:
     assert int(id_obj) == 42
 
 
+def test_use_a_subclass() -> None:
+    """Test that BaseId cannot be instantiated directly."""
+    with pytest.raises(
+        TypeError, match="BaseId cannot be instantiated directly. Use a subclass."
+    ):
+        BaseId(42)
+
+
 def test_warn_non_unique_prefix() -> None:
     """Test that using a non-unique prefix raises a warning."""
     with pytest.warns(UserWarning, match="Prefix 'TEST_ID' is already registered"):

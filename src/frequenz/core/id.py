@@ -62,8 +62,10 @@ Example: Creating an ID type with a non-standard name
 '''
 
 
+import logging
 from typing import Any, ClassVar, Self, cast
-from warnings import warn
+
+_logger = logging.getLogger(__name__)
 
 
 class BaseId:
@@ -114,10 +116,9 @@ class BaseId:
         if str_prefix in BaseId._registered_prefixes:
             # We want to raise an exception here, but currently can't due to
             # https://github.com/frequenz-floss/frequenz-repo-config-python/issues/421
-            warn(
-                f"Prefix '{str_prefix}' is already registered. "
-                "ID prefixes must be unique.",
-                stacklevel=2,
+            _logger.warning(
+                "Prefix '%s' is already registered. ID prefixes must be unique.",
+                str_prefix,
             )
         BaseId._registered_prefixes.add(str_prefix)
 

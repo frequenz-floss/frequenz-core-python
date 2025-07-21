@@ -15,7 +15,7 @@ The `frequenz-core` library is designed to be lightweight, type-safe, and follow
 You can install the library from PyPI using pip:
 
 ```bash
-pip install frequenz-core
+python -m pip install frequenz-core
 ```
 
 Or add it to your project's dependencies in `pyproject.toml`:
@@ -23,9 +23,13 @@ Or add it to your project's dependencies in `pyproject.toml`:
 ```toml
 [project]
 dependencies = [
-    "frequenz-core",
+    "frequenz-core >= 1.0.0, < 2",
 ]
 ```
+
+> [!NOTE]
+> We recommend pinning the dependency to the latest version for programs, like `"frequenz-core == 1.0.1"`, and specifying a version range spanning one major version for libraries, like `"frequenz-core >= 1.0.1, < 2"`.
+> We follow [semver](https://semver.org/).
 
 ## Quick Start
 

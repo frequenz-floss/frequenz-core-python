@@ -36,14 +36,14 @@ Or add it to your project's dependencies in `pyproject.toml`:
 ```toml
 [project]
 dependencies = [
-    "frequenz-core >= 1.0.0, < 2",
+    "frequenz-core >= 1.0.2, < 2",
 ]
 ```
 
 > [!NOTE]
 > We recommend pinning the dependency to the latest version for programs,
-> like `"frequenz-core == 1.0.1"`, and specifying a version range spanning
-> one major version for libraries, like `"frequenz-core >= 1.0.1, < 2"`.
+> like `"frequenz-core == 1.0.2"`, and specifying a version range spanning
+> one major version for libraries, like `"frequenz-core >= 1.0.2, < 2"`.
 > We follow [semver](https://semver.org/).
 
 ## Quick Start

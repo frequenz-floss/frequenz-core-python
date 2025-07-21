@@ -6,9 +6,22 @@
 
 ## Introduction
 
-Core utilities to complement Python's standard library. This library provides essential building blocks for Python applications, including mathematical utilities, datetime constants, typing helpers, strongly-typed identifiers, and module introspection tools.
+Core utilities to complement Python's standard library. This library provides
+essential building blocks for Python applications, including mathematical
+utilities, datetime constants, typing helpers, strongly-typed identifiers, and
+module introspection tools.
 
-The `frequenz-core` library is designed to be lightweight, type-safe, and follow modern Python best practices. It fills common gaps in the standard library with utilities that are frequently needed across different projects.
+The `frequenz-core` library is designed to be lightweight, type-safe, and
+follow modern Python best practices. It fills common gaps in the standard
+library with utilities that are frequently needed across different projects.
+
+## Supported Platforms
+
+The following platforms are officially supported (tested):
+
+- **Python:** 3.11
+- **Operating System:** Ubuntu Linux 20.04
+- **Architectures:** amd64, arm64
 
 ## Installation
 
@@ -28,7 +41,9 @@ dependencies = [
 ```
 
 > [!NOTE]
-> We recommend pinning the dependency to the latest version for programs, like `"frequenz-core == 1.0.1"`, and specifying a version range spanning one major version for libraries, like `"frequenz-core >= 1.0.1, < 2"`.
+> We recommend pinning the dependency to the latest version for programs,
+> like `"frequenz-core == 1.0.1"`, and specifying a version range spanning
+> one major version for libraries, like `"frequenz-core >= 1.0.1, < 2"`.
 > We follow [semver](https://semver.org/).
 
 ## Quick Start
@@ -59,7 +74,8 @@ print(public_name)  # "my.package"
 
 ### Math Utilities
 
-The math module provides utilities for floating-point comparisons and interval checking:
+The math module provides utilities for floating-point comparisons and interval
+checking:
 
 ```python
 from frequenz.core.math import is_close_to_zero, Interval
@@ -132,14 +148,6 @@ process_user(user_id)  # ✅ Works
 
 For information on how to use this library, please refer to the
 [documentation](https://frequenz-floss.github.io/frequenz-core-python/).
-
-## Supported Platforms
-
-The following platforms are officially supported (tested):
-
-- **Python:** 3.11
-- **Operating System:** Ubuntu Linux 20.04
-- **Architectures:** amd64, arm64
 
 ## Contributing
 

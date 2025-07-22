@@ -53,8 +53,6 @@ Here's a quick overview of the main functionality:
 ```python
 from frequenz.core.math import is_close_to_zero, Interval
 from frequenz.core.datetime import UNIX_EPOCH
-from frequenz.core.typing import disable_init
-from frequenz.core.id import BaseId
 from frequenz.core.module import get_public_module_name
 
 # Math utilities

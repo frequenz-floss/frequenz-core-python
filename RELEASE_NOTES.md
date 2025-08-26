@@ -1,13 +1,5 @@
 # Frequenz Core Library Release Notes
 
-## Summary
-
-<!-- Here goes a general summary of what this release is about -->
-
-## Upgrading
-
-<!-- Here goes notes on how to upgrade from previous versions, including deprecations and what they should be replaced with -->
-
 ## New Features
 
 - A new `frequenz.core.enum` module was added, providing a drop-in replacement `Enum` that supports deprecating members.
@@ -27,7 +19,3 @@
    status1 = TaskStatus.PENDING  # Warns: "PENDING is deprecated, use OPEN instead"
    assert status1 is TaskStatus.OPEN
    ```
-
-## Bug Fixes
-
-<!-- Here goes notable bug fixes that are worth a special mention or explanation -->

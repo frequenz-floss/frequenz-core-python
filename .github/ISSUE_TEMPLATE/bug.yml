@@ -53,7 +53,7 @@ body:
         - Date and time utilities (part:datetime)
         - Documentation (part:docs)
         - IDs (part:id)
-        - Mathemathics utilities (part:math)
+        - Mathematics utilities (part:math)
         - Module utilities (part:module)
         - Logging utilities (part:logging)
         - Type hints and typing (part:typing)

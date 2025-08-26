@@ -92,6 +92,25 @@ positive = Interval(0, None)  # [0, ∞]
 assert 1000 in positive  # True
 ```
 
+### `Enum` with deprecated members
+
+Define enums with deprecated members that raise deprecation warnings when
+accessed:
+
+```python
+from frequenz.core.enum import Enum, DeprecatedMember
+
+class TaskStatus(Enum):
+   OPEN = 1
+   IN_PROGRESS = 2
+   PENDING = DeprecatedMember(1, "PENDING is deprecated, use OPEN instead")
+   DONE = DeprecatedMember(3, "DONE is deprecated, use FINISHED instead")
+   FINISHED = 4
+
+status1 = TaskStatus.PENDING  # Warns: "PENDING is deprecated, use OPEN instead"
+assert status1 is TaskStatus.OPEN
+```
+
 ### Typing Utilities
 
 Disable class constructors to enforce factory pattern usage:

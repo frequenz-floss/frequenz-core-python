@@ -16,6 +16,7 @@ labelMappings:
   "part:collections": "part:collections"
   "part:datetime": "part:datetime"
   "part:docs": "part:docs"
+  "part:enum": "part:enum"
   "part:id": "part:id"
   "part:logging": "part:logging"
   "part:math": "part:math"

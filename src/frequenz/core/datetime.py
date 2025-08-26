@@ -1,7 +1,7 @@
 # License: MIT
 # Copyright © 2024 Frequenz Energy-as-a-Service GmbH
 
-"""Timeseries basic types."""
+"""Date and time utilities."""
 
 from datetime import datetime, timezone
 from typing import Final

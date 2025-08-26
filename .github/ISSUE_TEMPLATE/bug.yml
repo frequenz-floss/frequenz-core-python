@@ -52,6 +52,7 @@ body:
         - Collections (part:collections)
         - Date and time utilities (part:datetime)
         - Documentation (part:docs)
+        - Enum utilities (part:enum)
         - IDs (part:id)
         - Mathematics utilities (part:math)
         - Module utilities (part:module)

@@ -63,6 +63,14 @@
       - "examples/**"
       - LICENSE
 
+"part:enum":
+  - changed-files:
+    - any-glob-to-any-file:
+      - "src/frequenz/core/enum.py"
+      - "src/frequenz/core/enum/**"
+      - "tests/test_enum.py"
+      - "tests/enum/**"
+
 "part:id":
   - changed-files:
     - any-glob-to-any-file:

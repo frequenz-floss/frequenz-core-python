@@ -205,3 +205,61 @@ else:
 
         __deprecated_names__: ClassVar[Mapping[str, str]]
         __deprecated_value_map__: ClassVar[Mapping[Self, str]]
+
+
+def unique(enumeration: type[EnumT]) -> type[EnumT]:
+    """Class decorator for enums that ensures unique non-deprecated values.
+
+    This works similarly to [`@enum.unique`][enum.unique], but it only enforces
+    uniqueness for members that are not deprecated. This allows deprecated members to
+    be aliases for non-deprecated members without causing a `ValueError`.
+
+    If you need strict uniqueness for all deprecated and non-deprecated members, use
+    [`@enum.unique`][enum.unique] instead.
+
+    Example:
+        ```python
+        from frequenz.core.enum import Enum, DeprecatedMember, unique
+
+        @unique
+        class TaskStatus(Enum):
+            OPEN = 1
+            IN_PROGRESS = 2
+            # This is okay, as PENDING is a deprecated alias.
+            PENDING = DeprecatedMember(1, "Use OPEN instead")
+        ```
+
+    Args:
+        enumeration: The enum class to decorate.
+
+    Returns:
+        The decorated enum class.
+
+    Raises:
+        ValueError: If duplicate values are found among non-deprecated members.
+    """
+    # Retrieve the map of deprecated names created by the metaclass.
+    deprecated_names = enumeration.__dict__.get("__deprecated_names__", {})
+
+    duplicates = []
+    seen_values: dict[Any, str] = {}
+    for member_name, member in enumeration.__members__.items():
+        # Ignore members that are marked as deprecated.
+        if member_name in deprecated_names:
+            continue
+
+        value = member.value
+        if value in seen_values:
+            duplicates.append((member_name, seen_values[value]))
+        else:
+            seen_values[value] = member_name
+
+    if duplicates:
+        alias_details = ", ".join(
+            f"{name!r} -> {alias!r}" for name, alias in duplicates
+        )
+        raise ValueError(
+            f"duplicate values found in {enumeration.__name__}: {alias_details}"
+        )
+
+    return enumeration

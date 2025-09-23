@@ -1,21 +1,41 @@
 # Frequenz Core Library Release Notes
 
+## Summary
+
 ## New Features
 
-- A new `frequenz.core.enum` module was added, providing a drop-in replacement `Enum` that supports deprecating members.
+* `frequenz.core.enum` now provides a `@unique` decorator that is aware of deprecations, and will only check for uniqueness among non-deprecated enum members.
 
-   Example:
+    For example this works:
 
-   ```python
-   from frequenz.core.enum import Enum, DeprecatedMember
+    ```py
+    >>> from frequenz.core.enum import DeprecatedMember, Enum, unique
+    >>> 
+    >>> @unique
+    ... class Status(Enum):
+    ...     ACTIVE = 1
+    ...     INACTIVE = 2
+    ...     PENDING = DeprecatedMember(1, "PENDING is deprecated, use ACTIVE instead")
+    ... 
+    >>> 
+    ```
 
-   class TaskStatus(Enum):
-       OPEN = 1
-       IN_PROGRESS = 2
-       PENDING = DeprecatedMember(1, "PENDING is deprecated, use OPEN instead")
-       DONE = DeprecatedMember(3, "DONE is deprecated, use FINISHED instead")
-       FINISHED = 4
+    While using the standard library's `enum.unique` decorator raises a `ValueError`:
 
-   status1 = TaskStatus.PENDING  # Warns: "PENDING is deprecated, use OPEN instead"
-   assert status1 is TaskStatus.OPEN
-   ```
+    ```py
+    >>> from enum import unique
+    >>> from frequenz.core.enum import DeprecatedMember, Enum
+    >>> 
+    >>> @unique
+    ... class Status(Enum):
+    ...     ACTIVE = 1
+    ...     INACTIVE = 2
+    ...     PENDING = DeprecatedMember(1, "PENDING is deprecated, use ACTIVE instead")
+    ... 
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+      File "/usr/lib/python3.12/enum.py", line 1617, in unique
+        raise ValueError('duplicate values found in %r: %s' %
+    ValueError: duplicate values found in <enum 'Status'>: PENDING -> ACTIVE
+    >>> 
+    ```

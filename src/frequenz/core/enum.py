@@ -27,12 +27,19 @@ EnumT = TypeVar("EnumT", bound=enum.Enum)
 """Type variable for enum types."""
 
 
+ValueT = TypeVar("ValueT")
+"""Type variable for enum member values."""
+
+
 class DeprecatedMemberWarning(DeprecationWarning):
     """Warning category for deprecated enum members."""
 
 
 class DeprecatedMember:
-    """Marker used in enum class bodies to declare deprecated members.
+    """Class to mark members as deprecated.
+
+    This class should not be used directly, use
+    [`deprecated_member`][frequenz.core.enum.deprecated_member] instead.
 
     Please read the [`Enum`][frequenz.core.enum.Enum] documentation for details and
     examples.
@@ -48,8 +55,24 @@ class DeprecatedMember:
         self.message = message
 
 
+def deprecated_member(value: ValueT, message: str) -> ValueT:
+    """Mark an enum member as deprecated.
+
+    Please read the [`Enum`][frequenz.core.enum.Enum] documentation for details and
+    examples.
+
+    Args:
+        value: The value of the enum member to mark as deprecated.
+        message: The deprecation message to be shown when the member is accessed.
+
+    Returns:
+        The wrapped value, to mark the enum member as deprecated.
+    """
+    return cast(ValueT, DeprecatedMember(value, message))
+
+
 class DeprecatingEnumType(enum.EnumType):
-    """Enum metaclass that supports `DeprecatedMember` wrappers.
+    """Enum metaclass that supports deprecated members.
 
     Tip:
         Normally it is not necessary to use this class directly, use
@@ -163,7 +186,7 @@ if TYPE_CHECKING:
 else:
 
     class Enum(enum.Enum, metaclass=DeprecatingEnumType):
-        """Base class for enums that support DeprecatedMember.
+        """Base class for enums that support deprecated members.
 
         This class extends the standard library's [`enum.Enum`][] to support marking
         certain members as deprecated. Deprecated members can be accessed, but doing so
@@ -171,7 +194,7 @@ else:
         a [`DeprecatedMemberWarning`][frequenz.core.enum.DeprecatedMemberWarning].
 
         To declare a deprecated member, use the
-        [`DeprecatedMember`][frequenz.core.enum.DeprecatedMember] wrapper in the class body.
+        [`deprecated_member()`][frequenz.core.enum.deprecated_member] function.
 
         When using the enum constructor (i.e. `MyEnum(value)`), a warning is only emitted if
         the resolved member has no non-deprecated aliases. If there is at least one
@@ -179,13 +202,13 @@ else:
 
         Example:
             ```python
-            from frequenz.core.enum import Enum, DeprecatedMember
+            from frequenz.core.enum import Enum, deprecated_member
 
             class TaskStatus(Enum):
                 OPEN = 1
                 IN_PROGRESS = 2
-                PENDING = DeprecatedMember(1, "PENDING is deprecated, use OPEN instead")
-                DONE = DeprecatedMember(3, "DONE is deprecated, use FINISHED instead")
+                PENDING = deprecated_member(1, "PENDING is deprecated, use OPEN instead")
+                DONE = deprecated_member(3, "DONE is deprecated, use FINISHED instead")
                 FINISHED = 4
 
             # Accessing deprecated members:
@@ -219,14 +242,14 @@ def unique(enumeration: type[EnumT]) -> type[EnumT]:
 
     Example:
         ```python
-        from frequenz.core.enum import Enum, DeprecatedMember, unique
+        from frequenz.core.enum import Enum, deprecated_member, unique
 
         @unique
         class TaskStatus(Enum):
             OPEN = 1
             IN_PROGRESS = 2
             # This is okay, as PENDING is a deprecated alias.
-            PENDING = DeprecatedMember(1, "Use OPEN instead")
+            PENDING = deprecated_member(1, "Use OPEN instead")
         ```
 
     Args:

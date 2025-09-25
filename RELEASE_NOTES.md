@@ -1,17 +1,9 @@
 # Frequenz Core Library Release Notes
 
-## Summary
-
-<!-- Here goes a general summary of what this release is about -->
-
 ## Upgrading
 
-<!-- Here goes notes on how to upgrade from previous versions, including deprecations and what they should be replaced with -->
+- If you used `enum.DeprecatedMember` directly anywhere, you should probably switch to using `enum.deprecated_member` instead, which will tag the member value with the appropriate type.
 
 ## New Features
 
-<!-- Here goes the main new features and examples or instructions on how to use them -->
-
-## Bug Fixes
-
-<!-- Here goes notable bug fixes that are worth a special mention or explanation -->
+- A new `enum.deprecated_member` function has been added to create deprecated enum members with proper typing.

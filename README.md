@@ -98,13 +98,15 @@ Define enums with deprecated members that raise deprecation warnings when
 accessed:
 
 ```python
-from frequenz.core.enum import Enum, DeprecatedMember
+from frequenz.core.enum import Enum, deprecated_member, unique
 
+@unique
 class TaskStatus(Enum):
    OPEN = 1
    IN_PROGRESS = 2
-   PENDING = DeprecatedMember(1, "PENDING is deprecated, use OPEN instead")
-   DONE = DeprecatedMember(3, "DONE is deprecated, use FINISHED instead")
+   # Duplicate values are fine with `@unique` as long as they are deprecated
+   PENDING = deprecated_member(1, "PENDING is deprecated, use OPEN instead")
+   DONE = deprecated_member(3, "DONE is deprecated, use FINISHED instead")
    FINISHED = 4
 
 status1 = TaskStatus.PENDING  # Warns: "PENDING is deprecated, use OPEN instead"

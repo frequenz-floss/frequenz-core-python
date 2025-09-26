@@ -5,7 +5,13 @@
 
 import pytest
 
-from frequenz.core.enum import DeprecatedMember, DeprecatedMemberWarning, Enum, unique
+from frequenz.core.enum import (
+    DeprecatedMember,
+    DeprecatedMemberWarning,
+    Enum,
+    deprecated_member,
+    unique,
+)
 
 
 class _TestEnum(Enum):
@@ -13,8 +19,8 @@ class _TestEnum(Enum):
 
     OPEN = 1
     IN_PROGRESS = 2
-    PENDING = DeprecatedMember(1, "Use OPEN instead")
-    DONE = DeprecatedMember(3, "Use FINISHED instead")
+    PENDING = deprecated_member(1, "Use OPEN instead")
+    DONE = deprecated_member(3, "Use FINISHED instead")
     FINISHED = 4
 
 
@@ -35,6 +41,51 @@ def test_mypy_detects_deprecated_members() -> None:
     """
     with pytest.raises(AttributeError):
         _ = _TestEnum.I_DONT_EXIST  # type: ignore[attr-defined]
+
+
+def test_mypy_deprecated_member_correct_value_type() -> None:
+    """Test that mypy sees the correct value type for deprecated members.
+
+    If mypy wouldn't detect this, it should complain about value not having the
+    correct type.
+    """
+    _: int = _TestEnum.PENDING.value
+
+
+def test_deprecated_member_helper_returns_wrapper() -> None:
+    """Test the helper returns a DeprecatedMember wrapper preserving metadata."""
+    wrapper = deprecated_member(123, "Value 123 is deprecated")
+    assert isinstance(wrapper, DeprecatedMember)
+    assert wrapper.value == 123
+    assert wrapper.message == "Value 123 is deprecated"
+
+
+def test_deprecated_member_helper_enum_usage() -> None:
+    """Test that enums using the helper behave like those using DeprecatedMember directly."""
+
+    class _HelperEnum(Enum):
+        """Enum that uses deprecated_member for deprecated aliases."""
+
+        ACTIVE = 1
+        LEGACY_ACTIVE = deprecated_member(1, "Use ACTIVE instead")
+        LEGACY_ONLY = deprecated_member(2, "Use something else")
+
+    with pytest.deprecated_call() as recorder:
+        _ = _HelperEnum.LEGACY_ACTIVE
+    _assert_deprecated_member(recorder, "Use ACTIVE instead")
+
+    with pytest.deprecated_call() as recorder:
+        _ = _HelperEnum["LEGACY_ACTIVE"]
+    _assert_deprecated_member(recorder, "Use ACTIVE instead")
+
+    assert _HelperEnum(1) is _HelperEnum.ACTIVE
+
+    with pytest.deprecated_call() as recorder:
+        member = _HelperEnum(2)
+    _assert_deprecated_member(recorder, "Use something else")
+
+    with pytest.deprecated_call():
+        assert member is _HelperEnum.LEGACY_ONLY
 
 
 def test_attribute_access_warns() -> None:
@@ -89,7 +140,7 @@ def test_unique_decorator_success_with_deprecated_alias() -> None:
 
         ACTIVE = 1
         INACTIVE = 2
-        PENDING = DeprecatedMember(1, "Use ACTIVE instead")
+        PENDING = deprecated_member(1, "Use ACTIVE instead")
 
     with pytest.deprecated_call():
         assert _Status.PENDING is _Status.ACTIVE  # type: ignore[comparison-overlap]
@@ -163,8 +214,8 @@ def test_unique_decorator_success_all_deprecated() -> None:
     class _AllDeprecated(Enum):
         """An enum where all members are deprecated."""
 
-        OLD_A = DeprecatedMember(1, "Use something else")
-        OLD_B = DeprecatedMember(1, "Also use something else")
+        OLD_A = deprecated_member(1, "Use something else")
+        OLD_B = deprecated_member(1, "Also use something else")
 
     with pytest.deprecated_call():
         assert _AllDeprecated.OLD_A is _AllDeprecated.OLD_B  # type: ignore[comparison-overlap]

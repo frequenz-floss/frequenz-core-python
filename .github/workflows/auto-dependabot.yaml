@@ -28,7 +28,7 @@ jobs:
           private-key: ${{ secrets.FREQUENZ_AUTO_DEPENDABOT_APP_PRIVATE_KEY }}
 
       - name: Auto-merge Dependabot PR
-        uses: frequenz-floss/dependabot-auto-approve@ada24053062e8199b27ab90890f6f21b48824864 # PR #3
+        uses: frequenz-floss/dependabot-auto-approve@a115bc7e0194c08f876493f311ec6f4de53f984e # v1.4.0
         with:
           github-token: ${{ steps.app-token.outputs.token }}
           dependency-type: 'all'

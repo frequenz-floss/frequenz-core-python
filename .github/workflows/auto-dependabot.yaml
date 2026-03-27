@@ -17,7 +17,10 @@ permissions:
 
 jobs:
   auto-merge:
-    if: github.actor == 'dependabot[bot]'
+    name: Auto-merge Dependabot PR
+    if: >
+      github.actor == 'dependabot[bot]' &&
+      !contains(github.event.pull_request.title, 'the repo-config group')
     runs-on: ubuntu-slim
     steps:
       - name: Generate GitHub App token

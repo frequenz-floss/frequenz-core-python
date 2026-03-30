@@ -34,7 +34,7 @@ updates:
           - "minor"
         exclude-patterns:
           - "async-solipsism"
-          - "frequenz-repo-config"
+          - "frequenz-repo-config*"
           - "frequenz-repo-config[lib]"
           - "frequenz-repo-config[extra-lint-examples]"
           - "markdown-callouts"
@@ -49,7 +49,7 @@ updates:
       # each if we don't group them.
       repo-config:
         patterns:
-          - "frequenz-repo-config"
+          - "frequenz-repo-config*"
           - "frequenz-repo-config[lib]"
           - "frequenz-repo-config[extra-lint-examples]"
       mkdocstrings:

@@ -61,7 +61,6 @@ Example: Creating an ID type with a non-standard name
     ```
 '''
 
-
 import logging
 from typing import Any, ClassVar, Self, cast
 

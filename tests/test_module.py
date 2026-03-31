@@ -3,7 +3,6 @@
 
 """Tests for the log module."""
 
-
 import pytest
 
 from frequenz.core.module import get_public_module_name

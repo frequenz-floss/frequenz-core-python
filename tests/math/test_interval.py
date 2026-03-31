@@ -3,7 +3,6 @@
 
 """Tests for the collections module."""
 
-
 from typing import Self
 
 import pytest

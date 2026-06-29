@@ -207,7 +207,7 @@ class NoInitConstructibleMeta(type):
         class NoInitConstructibleABCMeta(ABCMeta, NoInitConstructibleMeta):
             pass
 
-        class MyAbstractClass(metaclas=NoInitConstructibleABCMeta):
+        class MyAbstractClass(metaclass=NoInitConstructibleABCMeta):
             @abstractmethod
             def do_something(self) -> None:
                 ...

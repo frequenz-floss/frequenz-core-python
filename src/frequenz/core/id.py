@@ -20,7 +20,7 @@ the ID and must be unique across all ID types.
 
 Note:
     The `str_prefix` must be unique across all ID types. If you try to use a
-    prefix that is already registered, a `ValueError` will be raised when defining
+    prefix that is already registered, a warning will be logged when defining
     the class.
 
 To encourage consistency, the class name must end with the suffix "Id" (e.g.,
@@ -156,6 +156,13 @@ class BaseId:
 
         Equality is defined as being of the exact same type and having the same
         underlying ID.
+
+        Args:
+            other: The object to compare against.
+
+        Returns:
+            True if `other` is of the same type and has the same underlying ID,
+            `NotImplemented` if `other` is of a different type.
         """
         # pylint thinks this is not an unidiomatic typecheck, but in this case
         # it is not. isinstance() returns True for subclasses, which is not
@@ -172,6 +179,13 @@ class BaseId:
         """Check if this instance is less than another object.
 
         Comparison is only defined between instances of the exact same type.
+
+        Args:
+            other: The object to compare against.
+
+        Returns:
+            True if this instance is less than `other`, `NotImplemented` if
+            `other` is of a different type.
         """
         # pylint: disable-next=unidiomatic-typecheck
         if type(other) is not type(self):
@@ -184,6 +198,9 @@ class BaseId:
 
         The hash is based on the exact type and the underlying ID to ensure
         that IDs of different types but with the same numeric value have different hashes.
+
+        Returns:
+            The hash of this instance.
         """
         return hash((type(self), self._id))
 

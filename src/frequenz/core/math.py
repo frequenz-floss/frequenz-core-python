@@ -44,13 +44,14 @@ LessThanComparableOrNoneT = TypeVar(
 class Interval(Generic[LessThanComparableOrNoneT]):
     """An interval to test if a value is within its limits.
 
-    The `start` and `end` are inclusive, meaning that the `start` and `end` limites are
-    included in the range when checking if a value is contained by the interval.
+    The [`.start`][.start] and [`.end`][.end] are inclusive, meaning that the
+    [`.start`][.start] and [`.end`][.end] limits are included in the range when
+    checking if a value is contained by the interval.
 
-    If the `start` or `end` is `None`, it means that the interval is unbounded in that
-    direction.
+    If the [`.start`][.start] or [`.end`][.end] is `None`, it means that the interval
+    is unbounded in that direction.
 
-    If `start` is bigger than `end`, a `ValueError` is raised.
+    If [`.start`][.start] is bigger than [`.end`][.end], a `ValueError` is raised.
 
     The type stored in the interval must be comparable, meaning that it must implement
     the `__lt__` method to be able to compare values.
@@ -74,14 +75,13 @@ class Interval(Generic[LessThanComparableOrNoneT]):
             )
 
     def __contains__(self, item: LessThanComparableOrNoneT) -> bool:
-        """
-        Check if the value is within the range of the container.
+        """Check if the value is within the range of the container.
 
         Args:
             item: The value to check.
 
         Returns:
-            bool: True if value is within the range, otherwise False.
+            True if value is within the range, otherwise False.
         """
         if item is None:
             return False

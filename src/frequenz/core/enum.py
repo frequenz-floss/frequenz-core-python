@@ -76,11 +76,13 @@ class DeprecatingEnumType(enum.EnumType):
 
     Tip:
         Normally it is not necessary to use this class directly, use
-        [`Enum`][frequenz.core.enum.Enum] instead.
+        [`Enum`][..Enum] instead.
 
     Behavior:
 
     - In the class body, members may be declared as `NAME = DeprecatedMember(value, msg)`.
+      See [`DeprecatedMember`][..DeprecatedMember] and
+      [`deprecated_member()`][..deprecated_member] for details.
     - During class creation, these wrappers are replaced with `value` so that
       a normal enum member or alias is created by [`EnumType`][enum.EnumType].
     - The deprecated names are recorded so that:
@@ -98,7 +100,7 @@ class DeprecatingEnumType(enum.EnumType):
         classdict: Mapping[str, Any],
         **kw: Any,
     ) -> type[EnumT]:
-        """Create the new enum class, rewriting `DeprecatedMember` instances."""
+        """Create the new enum class rewriting [`DeprecatedMember`][...DeprecatedMember] members."""
         deprecated_names: dict[str, str] = {}
         prepared = super().__prepare__(name, bases, **kw)
 

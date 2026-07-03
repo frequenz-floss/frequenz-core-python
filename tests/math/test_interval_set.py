@@ -3,6 +3,8 @@
 
 """Tests for the `IntervalSet` class."""
 
+import pytest
+
 from frequenz.core.math import Interval, IntervalSet
 
 
@@ -233,3 +235,31 @@ def test_float_bounds() -> None:
     assert list(interval_set) == [Interval(1.0, 10.7)]
     assert 4.5 in interval_set
     assert 11.0 not in interval_set
+
+
+def test_covariance() -> None:
+    """Test that `IntervalSet` is covariant in its value type.
+
+    This is a type-level check: assigning an `IntervalSet[bool]` to an
+    `IntervalSet[int]` (`bool` is a subtype of `int`) only passes the type checker if
+    `IntervalSet` is covariant; with an invariant type parameter `mypy` would reject
+    it. At runtime the assignment is a no-op, so the actual verification is done by
+    `mypy`.
+    """
+    narrower: IntervalSet[bool] = IntervalSet((Interval(False, True),))
+    wider: IntervalSet[int] = narrower
+    assert wider is narrower
+
+
+@pytest.mark.parametrize("incomparable", ["a string", None, object()])
+def test_contains_incomparable_type_raises(incomparable: object) -> None:
+    """Test that checking membership of an incomparable value raises `TypeError`.
+
+    `__contains__` accepts any `object` (so `IntervalSet` can be covariant), but a
+    value whose type is not compatible with the set's value type must fail loudly at
+    runtime with a clear error rather than silently returning a result or a cryptic
+    comparison error.
+    """
+    interval_set = IntervalSet((Interval(1, 5),))
+    with pytest.raises(TypeError, match=r"is not compatible with this set's value"):
+        _ = incomparable in interval_set

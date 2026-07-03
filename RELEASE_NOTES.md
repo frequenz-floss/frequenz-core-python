@@ -2,7 +2,7 @@
 
 ## Summary
 
-This release updates the `Interval` type to no longer include `None` in its type parameter, and introduces a new `IntervalSet` type to the `frequenz.core.math` module, which allows for efficient membership testing of normalized sets of intervals.
+This release updates the `Interval` type to no longer include `None` in its type parameter, and be covariant in its value type. It also introduces a new `IntervalSet` type to the `frequenz.core.math` module, which allows for efficient membership testing of normalized sets of intervals.
 
 ## Upgrading
 
@@ -14,11 +14,17 @@ This release updates the `Interval` type to no longer include `None` in its type
   - `Interval[LessThanComparable | None]` → `Interval[LessThanComparable]`
   - `LessThanComparableOrNoneT` (importable name) → `LessThanComparableT`
 
-  Note that explicitly using `Interval[int | None]` still works, as `(int | None) | None` is equivalent to `int | None`, even when it is no longer needed nor recommended. Old code will mostly work, but there is one soft breaking change: `None in some_interval` and `None in some_interval_set` is now a type-check error at call sites, matching the design intent that `None` is a bound marker and never a member value.
+  Note that explicitly using `Interval[int | None]` still works, as `(int | None) | None` is equivalent to `int | None`, even when it is no longer needed nor recommended.
 
 ## New Features
 
+- [`Interval`][frequenz.core.math.Interval] is now covariant in its value type, so an `Interval[T]` is accepted where an `Interval[S]` is expected when `T` is a subtype of `S`.
+
+  To allow this, its `__contains__` now accepts any `object`, as is conventional for the standard library containers. As a consequence, membership checks such as `None in some_interval` or `"x" in Interval(1, 5)` are no longer rejected by type checkers at call sites; they still evaluate at runtime, raising a `TypeError` for values that aren't compatible with the interval's value type.
+
 - Add [`IntervalSet`][frequenz.core.math.IntervalSet] to [`frequenz.core.math`][frequenz.core.math], a normalized set of [`Interval`][frequenz.core.math.Interval] values with `O(log n)` membership testing.
+
+  This type is also covariant in its value type, and its `__contains__` accepts any `object` for the same reasons as `Interval`.
 
   Overlapping or touching intervals are merged on construction, and `None` bounds (`-∞` / `+∞`) are handled during merging.
 

@@ -6,7 +6,7 @@
 import math
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
-from typing import Generic, Protocol, Self, TypeVar
+from typing import Generic, Protocol, Self, TypeVar, cast
 
 
 def is_close_to_zero(value: float, abs_tol: float = 1e-9) -> bool:
@@ -39,6 +39,19 @@ LessThanComparableT = TypeVar("LessThanComparableT", bound=LessThanComparable)
 """Type variable for a value that is [`LessThanComparable`][..LessThanComparable]."""
 
 
+LessThanComparableT_co = TypeVar(
+    "LessThanComparableT_co", bound=LessThanComparable, covariant=True
+)
+"""Covariant type variable for a [`LessThanComparable`][..LessThanComparable] value.
+
+This is used by the immutable [`Interval`][..Interval] and
+[`IntervalSet`][..IntervalSet] containers, which only ever produce values of this
+type (via their attributes and iteration) and never consume them as inputs, so an
+`Interval[T]` can be used where an `Interval[S]` is expected as long as `T` is a
+subtype of `S`.
+"""
+
+
 LessThanComparableOrNoneT = TypeVar(
     "LessThanComparableOrNoneT", bound=LessThanComparable | None
 )
@@ -46,12 +59,34 @@ LessThanComparableOrNoneT = TypeVar(
 
 Warning: Deprecated
     This type variable is deprecated and it will be removed in a future version. Use
-    [`LessThanComparableT`][..LessThanComparableT] instead.
+    [`LessThanComparableT`][..LessThanComparableT] or
+    [`LessThanComparableT_co`][..LessThanComparableT_co] instead.
 """
 
 
+def _value_type_name(
+    start: LessThanComparable | None, end: LessThanComparable | None
+) -> str:
+    """Return the name of the value type for a pair of interval bounds.
+
+    The value type is inferred at runtime from whichever bound is set (the generic
+    type parameter itself is erased). A fully unbounded interval (both bounds `None`)
+    has no value to infer the type from and returns ``"object"``; such an interval
+    performs no comparison, so this is never used to build an error in practice.
+
+    Args:
+        start: The interval start bound, or `None` for an unbounded start.
+        end: The interval end bound, or `None` for an unbounded end.
+
+    Returns:
+        The name of the value type, or ``"object"`` if both bounds are `None`.
+    """
+    bound = start if start is not None else end
+    return "object" if bound is None else type(bound).__name__
+
+
 @dataclass(frozen=True, repr=False)
-class Interval(Generic[LessThanComparableT]):
+class Interval(Generic[LessThanComparableT_co]):
     """An interval to test if a value is within its limits.
 
     The [`.start`][.start] and [`.end`][.end] are inclusive, meaning that the
@@ -68,10 +103,10 @@ class Interval(Generic[LessThanComparableT]):
     the `__lt__` method to be able to compare values.
     """
 
-    start: LessThanComparableT | None
+    start: LessThanComparableT_co | None
     """The start of the interval, or `None` to indicate no lower bound (-∞)."""
 
-    end: LessThanComparableT | None
+    end: LessThanComparableT_co | None
     """The end of the interval, or `None` to indicate no upper bound (+∞)."""
 
     def __post_init__(self) -> None:
@@ -83,7 +118,7 @@ class Interval(Generic[LessThanComparableT]):
                 f"The start ({self.start}) can't be bigger than end ({self.end})"
             )
 
-    def __contains__(self, item: LessThanComparableT) -> bool:
+    def __contains__(self, item: object) -> bool:
         """Check if the value is within the range of the interval.
 
         Args:
@@ -91,12 +126,23 @@ class Interval(Generic[LessThanComparableT]):
 
         Returns:
             True if value is within the range, otherwise False.
+
+        Raises:
+            TypeError: If `item`'s type is not compatible with the interval's value
+                type.
         """
-        if self.start is not None and item < self.start:
-            return False
-        if self.end is not None and item > self.end:
-            return False
-        return True
+        value = cast(LessThanComparableT_co, item)
+        try:
+            if self.start is not None and value < self.start:
+                return False
+            if self.end is not None and value > self.end:
+                return False
+            return True
+        except TypeError:
+            raise TypeError(
+                f"Object of type {type(item).__name__!r} is not compatible with "
+                f"this interval's value type {_value_type_name(self.start, self.end)!r}"
+            ) from None
 
     def __repr__(self) -> str:
         """Return a string representation of this instance."""
@@ -110,7 +156,7 @@ class Interval(Generic[LessThanComparableT]):
 
 
 @dataclass(frozen=True, repr=False)
-class IntervalSet(Generic[LessThanComparableT]):
+class IntervalSet(Generic[LessThanComparableT_co]):
     """A normalized set of intervals for efficient membership testing.
 
     An [`IntervalSet`][.] represents the union of a collection of
@@ -147,14 +193,14 @@ class IntervalSet(Generic[LessThanComparableT]):
         ```
     """
 
-    intervals: tuple[Interval[LessThanComparableT], ...] = ()
+    intervals: tuple[Interval[LessThanComparableT_co], ...] = ()
     """The normalized intervals in this set: sorted by start and non-overlapping."""
 
     def __post_init__(self) -> None:
         """Normalize the passed intervals by sorting and merging overlapping ones."""
         object.__setattr__(self, "intervals", _sort_and_merge(self.intervals))
 
-    def __contains__(self, item: LessThanComparableT) -> bool:
+    def __contains__(self, item: object) -> bool:
         """Check whether the value is within any interval of this set.
 
         Args:
@@ -162,25 +208,37 @@ class IntervalSet(Generic[LessThanComparableT]):
 
         Returns:
             Whether `item` is within any interval of this set.
+
+        Raises:
+            TypeError: If `item`'s type is not compatible with the set's value type.
         """
         if not self.intervals:
             return False
 
-        # Binary search for the rightmost interval whose start is `<= item`. A `None`
-        # start means -∞, which is always `<= item`.
-        lo, hi = 0, len(self.intervals)
-        while lo < hi:
-            mid = (lo + hi) // 2
-            start = self.intervals[mid].start
-            if start is None or not item < start:
-                lo = mid + 1
-            else:
-                hi = mid
+        value = cast(LessThanComparableT_co, item)
 
-        idx = lo - 1
-        return idx >= 0 and item in self.intervals[idx]
+        try:
+            # Binary search for the rightmost interval whose start is `<= item`. A
+            # `None` start means -∞, which is always `<= item`.
+            lo, hi = 0, len(self.intervals)
+            while lo < hi:
+                mid = (lo + hi) // 2
+                start = self.intervals[mid].start
+                if start is None or not value < start:
+                    lo = mid + 1
+                else:
+                    hi = mid
 
-    def __iter__(self) -> Iterator[Interval[LessThanComparableT]]:
+            idx = lo - 1
+            return idx >= 0 and value in self.intervals[idx]
+        except TypeError:
+            first = self.intervals[0]
+            raise TypeError(
+                f"Object of type {type(item).__name__!r} is not compatible with this "
+                f"set's value type {_value_type_name(first.start, first.end)!r}"
+            ) from None
+
+    def __iter__(self) -> Iterator[Interval[LessThanComparableT_co]]:
         """Iterate over the normalized intervals in ascending order of start."""
         return iter(self.intervals)
 

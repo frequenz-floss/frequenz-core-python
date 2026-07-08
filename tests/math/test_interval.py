@@ -144,7 +144,5 @@ def test_contains_no_end(
 )
 def test_contains_unbound(value: LessThanComparable) -> None:
     """Test if a value is within the interval with no bounds."""
-    interval_no_bounds: Interval[LessThanComparable | None] = Interval(
-        start=None, end=None
-    )
+    interval_no_bounds: Interval[LessThanComparable] = Interval(start=None, end=None)
     assert value in interval_no_bounds  # any value within bounds

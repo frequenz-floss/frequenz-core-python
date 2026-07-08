@@ -6,7 +6,15 @@
 
 ## Upgrading
 
-<!-- Here goes notes on how to upgrade from previous versions, including deprecations and what they should be replaced with -->
+- [`Interval`][frequenz.core.math.Interval]'s type parameter no longer includes `None`. The exported type variable `LessThanComparableOrNoneT` (bound to `LessThanComparable | None`) was deprecated and replaced with `LessThanComparableT` (bound to `LessThanComparable`). `None` is still accepted as a value for `start` / `end` to indicate an unbounded side, but it is treated purely as bound metadata rather than a value in the interval's comparable space.
+
+  Migration:
+
+  - `Interval[int | None]` → `Interval[int]`
+  - `Interval[LessThanComparable | None]` → `Interval[LessThanComparable]`
+  - `LessThanComparableOrNoneT` (importable name) → `LessThanComparableT`
+
+  Note that explicitly using `Interval[int | None]` still works, as `(int | None) | None` is equivalent to `int | None`, even when it is no longer needed nor recommended. Old code will mostly work, but there is one soft breaking change: `None in some_interval` and `None in some_interval_set` is now a type-check error at call sites, matching the design intent that `None` is a bound marker and never a member value.
 
 ## New Features
 

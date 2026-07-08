@@ -5,7 +5,7 @@
 
 import math
 from dataclasses import dataclass
-from typing import Generic, Protocol, Self, TypeVar, cast
+from typing import Generic, Protocol, Self, TypeVar
 
 
 def is_close_to_zero(value: float, abs_tol: float = 1e-9) -> bool:
@@ -34,14 +34,23 @@ class LessThanComparable(Protocol):
         """Return whether self is less than other."""
 
 
+LessThanComparableT = TypeVar("LessThanComparableT", bound=LessThanComparable)
+"""Type variable for a value that is [`LessThanComparable`][..LessThanComparable]."""
+
+
 LessThanComparableOrNoneT = TypeVar(
     "LessThanComparableOrNoneT", bound=LessThanComparable | None
 )
-"""Type variable for a value that a `LessThanComparable` or `None`."""
+"""Type variable for a value that is [`LessThanComparable`][..LessThanComparable] or `None`.
+
+Warning: Deprecated
+    This type variable is deprecated and it will be removed in a future version. Use
+    [`LessThanComparableT`][..LessThanComparableT] instead.
+"""
 
 
 @dataclass(frozen=True, repr=False)
-class Interval(Generic[LessThanComparableOrNoneT]):
+class Interval(Generic[LessThanComparableT]):
     """An interval to test if a value is within its limits.
 
     The [`.start`][.start] and [`.end`][.end] are inclusive, meaning that the
@@ -49,7 +58,8 @@ class Interval(Generic[LessThanComparableOrNoneT]):
     checking if a value is contained by the interval.
 
     If the [`.start`][.start] or [`.end`][.end] is `None`, it means that the interval
-    is unbounded in that direction.
+    is unbounded in that direction. `None` is used purely as a bound marker; it is
+    never a value in the interval.
 
     If [`.start`][.start] is bigger than [`.end`][.end], a `ValueError` is raised.
 
@@ -57,25 +67,23 @@ class Interval(Generic[LessThanComparableOrNoneT]):
     the `__lt__` method to be able to compare values.
     """
 
-    start: LessThanComparableOrNoneT
-    """The start of the interval."""
+    start: LessThanComparableT | None
+    """The start of the interval, or `None` to indicate no lower bound (-∞)."""
 
-    end: LessThanComparableOrNoneT
-    """The end of the interval."""
+    end: LessThanComparableT | None
+    """The end of the interval, or `None` to indicate no upper bound (+∞)."""
 
     def __post_init__(self) -> None:
         """Check if the start is less than or equal to the end."""
         if self.start is None or self.end is None:
             return
-        start = cast(LessThanComparable, self.start)
-        end = cast(LessThanComparable, self.end)
-        if start > end:
+        if self.start > self.end:
             raise ValueError(
                 f"The start ({self.start}) can't be bigger than end ({self.end})"
             )
 
-    def __contains__(self, item: LessThanComparableOrNoneT) -> bool:
-        """Check if the value is within the range of the container.
+    def __contains__(self, item: LessThanComparableT) -> bool:
+        """Check if the value is within the range of the interval.
 
         Args:
             item: The value to check.
@@ -83,27 +91,11 @@ class Interval(Generic[LessThanComparableOrNoneT]):
         Returns:
             True if value is within the range, otherwise False.
         """
-        if item is None:
+        if self.start is not None and item < self.start:
             return False
-        casted_item = cast(LessThanComparable, item)
-
-        if self.start is None and self.end is None:
-            return True
-        if self.start is None:
-            start = cast(LessThanComparable, self.end)
-            return not casted_item > start
-        if self.end is None:
-            return not self.start > item
-        # mypy seems to get confused here, not being able to narrow start and end to
-        # just LessThanComparable, complaining with:
-        #   error: Unsupported left operand type for <= (some union)
-        # But we know if they are not None, they should be LessThanComparable, and
-        # actually mypy is being able to figure it out in the lines above, just not in
-        # this one, so it should be safe to cast.
-        return not (
-            casted_item < cast(LessThanComparable, self.start)
-            or casted_item > cast(LessThanComparable, self.end)
-        )
+        if self.end is not None and item > self.end:
+            return False
+        return True
 
     def __repr__(self) -> str:
         """Return a string representation of this instance."""

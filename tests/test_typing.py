@@ -3,11 +3,37 @@
 
 """Test cases for the typing module."""
 
-from typing import Self
+from typing import Self, assert_never
 
 import pytest
 
-from frequenz.core.typing import disable_init
+from frequenz.core.typing import FloatInt, disable_init
+
+
+def test_float_int_matches_floats_and_ints() -> None:
+    """Test that both floats and ints are instances of FloatInt."""
+    assert isinstance(1.5, FloatInt)
+    assert isinstance(1, FloatInt)
+    # bool is a subclass of int, so it leaks in too, as documented.
+    assert isinstance(True, FloatInt)
+    assert not isinstance("1", FloatInt)
+
+
+def test_float_int_is_exhausted_by_float_and_int_cases() -> None:
+    """Test that matching float and int exhausts FloatInt for ints and floats."""
+
+    def describe(value: FloatInt | None) -> str:
+        match value:
+            case float() | int():
+                return f"number {value}"
+            case None:
+                return "nothing"
+            case unexpected:
+                assert_never(unexpected)
+
+    assert describe(1.5) == "number 1.5"
+    assert describe(1) == "number 1"
+    assert describe(None) == "nothing"
 
 
 def test_disable_init_declaration_with_custom_error() -> None:

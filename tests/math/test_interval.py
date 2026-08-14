@@ -146,3 +146,32 @@ def test_contains_unbound(value: LessThanComparable) -> None:
     """Test if a value is within the interval with no bounds."""
     interval_no_bounds: Interval[LessThanComparable] = Interval(start=None, end=None)
     assert value in interval_no_bounds  # any value within bounds
+
+
+def test_covariance() -> None:
+    """Test that `Interval` is covariant in its value type.
+
+    This is a type-level check: assigning an `Interval[bool]` to an `Interval[int]`
+    (`bool` is a subtype of `int`) only passes the type checker if `Interval` is
+    covariant; with an invariant type parameter `mypy` would reject it. At runtime
+    the assignment is a no-op, so the actual verification is done by `mypy`.
+    """
+    narrower: Interval[bool] = Interval(False, True)
+    wider: Interval[int] = narrower
+    assert wider is narrower
+
+
+@pytest.mark.parametrize("incomparable", ["a string", None, object()])
+def test_contains_incomparable_type_raises(incomparable: object) -> None:
+    """Test that checking membership of an incomparable value raises `TypeError`.
+
+    `__contains__` accepts any `object` (so `Interval` can be covariant), but a value
+    whose type is not compatible with the interval's value type must fail loudly at
+    runtime with a clear error rather than silently returning a result or a cryptic
+    comparison error.
+    """
+    interval = Interval(1, 5)
+    with pytest.raises(
+        TypeError, match=r"is not compatible with this interval's value"
+    ):
+        _ = incomparable in interval

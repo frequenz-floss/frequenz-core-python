@@ -11,10 +11,60 @@ It also provides a metaclass used by the decorator to disable the `__init__`:
 [`NoInitConstructibleMeta`][frequenz.core.typing.NoInitConstructibleMeta]. This is
 useful mostly for disabling `__init__` while having to use another metaclass too (like
 [`abc.ABCMeta`][abc.ABCMeta]).
+
+Finally, it provides [`FloatInt`][frequenz.core.typing.FloatInt], an honest type alias
+for `float | int`, to annotate floating point values that can also be an `int` at
+runtime.
 """
 
 from collections.abc import Callable
-from typing import Any, NoReturn, TypeVar, cast, overload
+from typing import Any, NoReturn, TypeAlias, TypeVar, cast, overload
+
+FloatInt: TypeAlias = float | int
+"""A floating point value that can also be an `int` at runtime.
+
+[PEP 484's numeric tower](https://peps.python.org/pep-0484/#the-numeric-tower) makes
+`int` assignable to any `float`-annotated parameter, attribute or variable, so a plain
+`float` annotation is a lie: type checkers (even `mypy --strict`) happily accept `int`
+values, but `isinstance(1, float)` is `False` at runtime. This breaks `match … case
+float():` arms (an `int` value falls through to
+[`assert_never()`][typing.assert_never]), calls to `float`-only methods like
+[`hex()`][float.hex], and any other code dispatching on the concrete runtime type.
+
+Annotating with this alias instead makes the heterogeneity explicit, so type checkers
+push the code reading these values to handle both branches, typically by matching with
+`case float() | int():`.
+
+The full analysis, including the alternatives that were rejected, is recorded in
+[issue #250](https://github.com/frequenz-floss/frequenz-client-common-python/issues/250).
+
+Danger:
+    `bool` is a subclass of `int`, so `True` and `False` also satisfy this alias. This
+    is inherent to Python's type system and is not guarded against.
+
+Example:
+    ```python
+    from typing import assert_never
+
+    from frequenz.core.typing import FloatInt
+
+
+    def describe(value: FloatInt | None) -> str:
+        match value:
+            case float() | int():
+                return f"number {value}"
+            case None:
+                return "nothing"
+            case unexpected:
+                assert_never(unexpected)
+
+
+    assert describe(1) == "number 1"
+    assert describe(1.5) == "number 1.5"
+    assert describe(None) == "nothing"
+    ```
+"""
+
 
 TypeT = TypeVar("TypeT", bound=type)
 """A type variable that is bound to a type."""

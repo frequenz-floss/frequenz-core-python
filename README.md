@@ -136,6 +136,28 @@ class ApiClient:
 client = ApiClient.create("my-api-key")  # ✅ Works
 ```
 
+Annotate floating point values honestly, as Python's numeric tower lets `int`
+values through any `float` annotation:
+
+```python
+from typing import assert_never
+
+from frequenz.core.typing import FloatInt
+
+def describe(value: FloatInt | None) -> str:
+    match value:
+        case float() | int():
+            return f"number {value}"
+        case None:
+            return "nothing"
+        case unexpected:
+            assert_never(unexpected)
+
+assert describe(1) == "number 1"  # ✅ `case float():` alone would crash here
+assert describe(1.5) == "number 1.5"
+assert describe(None) == "nothing"
+```
+
 ### Strongly-Typed IDs
 
 Create type-safe identifiers for different entities:

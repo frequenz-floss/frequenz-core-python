@@ -5,7 +5,7 @@
 requires = [
   "setuptools == 84.0.0",
   "setuptools_scm[toml] == 10.3.4",
-  "frequenz-repo-config[lib] == 0.18.0",
+  "frequenz-repo-config[lib] == 0.19.0",
 ]
 build-backend = "setuptools.build_meta"
 
@@ -65,7 +65,7 @@ dev-mkdocs = [
   "mkdocs-material == 9.7.7",
   "mkdocstrings[python] == 1.0.6",
   "mkdocstrings-python == 2.0.7",
-  "frequenz-repo-config[lib] == 0.18.0",
+  "frequenz-repo-config[lib] == 0.19.0",
 ]
 dev-mypy = [
   "mypy == 2.3.1",
@@ -73,7 +73,7 @@ dev-mypy = [
   # For checking the noxfile, docs/ script, and tests
   "frequenz-core[dev-mkdocs,dev-noxfile,dev-pytest]",
 ]
-dev-noxfile = ["nox == 2026.8.17", "frequenz-repo-config[lib] == 0.18.0"]
+dev-noxfile = ["nox == 2026.8.17", "frequenz-repo-config[lib] == 0.19.0"]
 dev-pylint = [
   # dev-pytest already defines a dependency to pylint because of the examples
   # For checking the noxfile, docs/ script, and tests
@@ -82,7 +82,7 @@ dev-pylint = [
 dev-pytest = [
   "pytest == 9.1.1",
   "pylint == 4.0.8", # We need this to check for the examples
-  "frequenz-repo-config[extra-lint-examples] == 0.18.0",
+  "frequenz-repo-config[extra-lint-examples] == 0.19.0",
   "pytest-mock == 3.16.0",
   "pytest-asyncio == 1.4.0",
   "async-solipsism == 0.9",
@@ -165,13 +165,21 @@ filterwarnings = [
   "error",
   "once::DeprecationWarning",
   "once::PendingDeprecationWarning",
+  # We ignore warnings about protobuf gencode version being one version older
+  # than the current version, as this is supported by protobuf, and we expect to
+  # have such cases. If we go too far, we will get a proper error anyways.
+  # We use a raw string (single quotes) to avoid the need to escape special
+  # characters as this is a regex.
+  'ignore:Protobuf gencode version .*exactly one major version older.*:UserWarning',
 ]
 testpaths = ["tests", "src"]
+asyncio_debug = true
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 required_plugins = ["pytest-asyncio", "pytest-mock"]
 
 [tool.mypy]
+enable_error_code = ["exhaustive-match"]
 explicit_package_bases = true
 namespace_packages = true
 # This option disables mypy cache, and it is sometimes useful to enable it if

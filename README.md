@@ -209,8 +209,8 @@ else:
     # imports included.
     __getattr__ = deprecated_aliases(
         __name__,
-        # Warns "<module>.Decimal is deprecated since v1.2.0. Use
-        # decimal.Decimal instead."
+        # Warns "<module>.Decimal is deprecated. Use decimal.Decimal instead.",
+        # `since` is for the documentation.
         DeprecatedAlias("Decimal", new_module="decimal", since="v1.2.0"),
         # Renamed on the way out
         DeprecatedAlias(

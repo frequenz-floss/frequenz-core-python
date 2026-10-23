@@ -13,8 +13,9 @@ common case of a library having to touch a symbol it deprecated itself.
 It also provides
 [`deprecated_aliases`][frequenz.core.warnings.deprecated_aliases], to keep the old
 import path of a symbol that moved to another module, or was renamed, working,
-warning whoever uses it since which version it is deprecated, as its
-[`DeprecatedAlias`][frequenz.core.warnings.DeprecatedAlias] entry says, and
+warning whoever uses it, with a
+[`DeprecatedAlias`][frequenz.core.warnings.DeprecatedAlias] entry saying where it
+is now and since which version it is deprecated, and
 [`asserting_no_warnings`][frequenz.core.warnings.asserting_no_warnings] with its
 [`asserting_no_deprecations`][frequenz.core.warnings.asserting_no_deprecations]
 shortcut, to check in a test that a piece of code doesn't warn.

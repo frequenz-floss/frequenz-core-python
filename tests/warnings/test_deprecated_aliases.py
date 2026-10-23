@@ -20,7 +20,7 @@ from frequenz.core.warnings import (
 )
 from tests.warnings import documented_aliases
 
-_MESSAGE = "{old} is deprecated since v1.2.3. Use {new} instead."
+_MESSAGE = "{old} is deprecated and will be removed. Use {new} instead."
 
 
 def test_deprecated_alias_keeps_what_it_was_given() -> None:
@@ -76,20 +76,26 @@ def test_deprecated_alias_signature(
         DeprecatedAlias(*args, **kwargs)
 
 
-def test_deprecated_alias_needs_exactly_one_of_since_and_message() -> None:
-    """Test that giving both `since` and `message`, or neither, is refused.
+def test_deprecated_alias_takes_since_and_message_independently() -> None:
+    """Test that `since` and `message` can both be given, or neither.
 
-    The `type: ignore` comments are part of the test: mypy reports them as unused,
-    and fails, if the overloads ever accept these calls.
+    `since` is only for the documentation and `message` only for the warning, so
+    neither excludes the other. These calls type check too: mypy fails on them if
+    the overloads ever stop accepting them.
     """
-    with pytest.raises(TypeError, match="exactly one of since and message, got both"):
-        DeprecatedAlias(  # type: ignore[call-overload]
-            "Decimal", new_module="decimal", since="v1.2.3", message=_MESSAGE
-        )
-    with pytest.raises(
-        TypeError, match="exactly one of since and message, got neither"
-    ):
-        DeprecatedAlias("Decimal", new_module="decimal")  # type: ignore[call-overload]
+    both = DeprecatedAlias(
+        "Decimal", new_module="decimal", since="v1.2.3", message=_MESSAGE
+    )
+    assert both.since == "v1.2.3"
+    assert both.message == _MESSAGE
+
+    neither = DeprecatedAlias("Decimal", new_module="decimal")
+    assert neither.since is None
+    assert neither.message is None
+
+    renamed = DeprecatedAlias("OldName", new_name="NewName")
+    assert renamed.since is None
+    assert renamed.message is None
 
 
 def test_deprecated_alias_needs_a_new_module_or_name() -> None:
@@ -181,20 +187,24 @@ def test_deprecated_alias_rejects_a_bad_since(
 
 
 def test_deprecated_alias_formats_its_message() -> None:
-    """Test the message of an alias with `since` and of one with `message`.
+    """Test the standard message, and an alias' own `message`.
 
-    `since` is inserted as written, braces included, rather than being read as part
-    of a template.
+    `since` never shows up in either: it is only for the documentation.
     """
     names = {"old": "old_home.Decimal", "new": "decimal.Decimal"}
+    standard = "old_home.Decimal is deprecated. Use decimal.Decimal instead."
 
     since = DeprecatedAlias("Decimal", new_module="decimal", since="v{1}.2")
-    assert since.format_message(**names) == (
-        "old_home.Decimal is deprecated since v{1}.2. Use decimal.Decimal instead."
-    )
+    assert since.format_message(**names) == standard
+
+    neither = DeprecatedAlias("Decimal", new_module="decimal")
+    assert neither.format_message(**names) == standard
 
     message = DeprecatedAlias(
-        "Decimal", new_module="decimal", message="{old} is gone, use {new} ({{v2}})"
+        "Decimal",
+        new_module="decimal",
+        since="v1.2.3",
+        message="{old} is gone, use {new} ({{v2}})",
     )
     assert message.format_message(**names) == (
         "old_home.Decimal is gone, use decimal.Decimal ({v2})"
@@ -226,7 +236,7 @@ def test_deprecated_aliases_warns_and_returns_the_real_object() -> None:
         assert module.Fraction is fractions.Fraction
 
     assert [str(warning.message) for warning in caught] == [
-        "old_home.Decimal is deprecated since v1.2.3. Use decimal.Decimal instead.",
+        "old_home.Decimal is deprecated. Use decimal.Decimal instead.",
         "old_home.Fraction is gone since v2, see fractions.Fraction",
     ]
     # stacklevel=2, so the warning is attributed to this file, not to the helper.
@@ -332,7 +342,7 @@ def test_deprecated_aliases_follows_renames() -> None:
     with pytest.warns(
         DeprecationWarning,
         match=(
-            "^old_home_renamed.Rational is deprecated since v1.2.3. "
+            "^old_home_renamed.Rational is deprecated and will be removed. "
             "Use fractions.Fraction instead.$"
         ),
     ):
@@ -358,7 +368,7 @@ def test_deprecated_aliases_follows_renames_in_place(
     with pytest.warns(
         DeprecationWarning,
         match=(
-            "^old_home_in_place.Gadget is deprecated since v1.2.3. "
+            "^old_home_in_place.Gadget is deprecated. "
             "Use old_home_in_place.Widget instead.$"
         ),
     ):
@@ -377,10 +387,7 @@ def test_deprecated_aliases_customises_the_warning() -> None:
 
     with pytest.warns(
         FutureWarning,
-        match=(
-            "^old_home_custom.Decimal is deprecated since v1.2.3. "
-            "Use decimal.Decimal instead.$"
-        ),
+        match="^old_home_custom.Decimal is deprecated. Use decimal.Decimal instead.$",
     ) as caught:
         assert module.Decimal is decimal.Decimal
 
@@ -421,7 +428,7 @@ def test_deprecated_aliases_in_a_real_module() -> None:
     with pytest.warns(
         DeprecationWarning,
         match=(
-            "^tests.warnings.documented_aliases.Decimal is deprecated since v1.2.0. "
+            "^tests.warnings.documented_aliases.Decimal is deprecated. "
             "Use decimal.Decimal instead.$"
         ),
     ):
@@ -430,8 +437,8 @@ def test_deprecated_aliases_in_a_real_module() -> None:
     with pytest.warns(
         DeprecationWarning,
         match=(
-            "^tests.warnings.documented_aliases.Rational is deprecated since v1.3.0. "
-            "Use fractions.Fraction instead.$"
+            "^tests.warnings.documented_aliases.Rational is deprecated and will be "
+            "removed in v2.0.0. Use fractions.Fraction instead.$"
         ),
     ):
         assert documented_aliases.Rational is fractions.Fraction
@@ -474,10 +481,10 @@ def test_deprecated_aliases_reach_star_imports() -> None:
     # import itself, so every alias warns more than once here. Which messages come
     # out is the part worth asserting; how many times CPython looks them up is not.
     assert {str(warning.message) for warning in caught} == {
-        "tests.warnings.documented_aliases.Decimal is deprecated since v1.2.0. "
+        "tests.warnings.documented_aliases.Decimal is deprecated. "
         "Use decimal.Decimal instead.",
-        "tests.warnings.documented_aliases.Rational is deprecated since v1.3.0. "
-        "Use fractions.Fraction instead.",
+        "tests.warnings.documented_aliases.Rational is deprecated and will be "
+        "removed in v2.0.0. Use fractions.Fraction instead.",
     }
 
 

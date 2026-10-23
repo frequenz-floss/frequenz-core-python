@@ -24,4 +24,5 @@ labelMappings:
   "part:tests": "part:tests"
   "part:tooling": "part:tooling"
   "part:typing": "part:typing"
+  "part:warnings": "part:warnings"
   "part:❓": "part:❓"

@@ -27,11 +27,17 @@ class DeprecatedAlias:
     both. Without `new_module` it is still in the module defining the alias, under
     its new name.
 
-    An alias says either since which version it is deprecated, with `since`, or
-    its whole warning message, with `message`, but not both. `since="v1.2.0"`
-    warns with `<old> is deprecated since v1.2.0. Use <new> instead.`, which is
-    what the deprecations guide suggests, so `message` is only needed to say
-    something else.
+    Reaching the alias warns with `<old> is deprecated. Use <new> instead.`, with
+    fully qualified names, following the Frequenz deprecation guide, or with
+    `message` if something else is needed.
+
+    `since`, the version the alias is deprecated since, is not part of the
+    warning: it is only there for the documentation.
+    [`griffe-frequenz-core`](https://github.com/frequenz-floss/griffe-frequenz-core)
+    reads it, together with where the symbol is now, to generate the alias'
+    `Deprecated:` notice, so `message` changes the warning only. To change the
+    notice, write a `Deprecated:` admonition by hand in the docstring of the alias
+    declared for type checkers, which replaces the generated one.
 
     Everything is checked when the alias is created rather than when it is
     reached.
@@ -55,21 +61,21 @@ class DeprecatedAlias:
     """
 
     since: str | None
-    """The version the alias is deprecated since, or `None` if it has a `message`.
+    """The version the alias is deprecated since, or `None` if not given.
 
-    The warning says `<old> is deprecated since <since>. Use <new> instead.`
+    It is only used for the documentation, never in the warning.
     """
 
     message: str | None
-    """The template for the warning message, or `None` if it has a `since`.
+    """The template for the warning message, or `None` for the standard one.
 
     It is formatted with `{old}` and `{new}`, the fully qualified names of the
     alias and of the symbol it resolves to, as plain fields, without attributes,
     indexes, conversions or format specs.
     """
 
-    # One pair of overloads with `new_module` and one with only `new_name`, so a call
-    # with neither matches none of them.
+    # One overload with `new_module` and one with only `new_name`, so a call with
+    # neither matches none of them.
     @overload
     def __init__(  # noqa: D107
         self,
@@ -78,18 +84,8 @@ class DeprecatedAlias:
         *,
         new_module: str,
         new_name: str | None = None,
-        since: str,
-    ) -> None: ...
-
-    @overload
-    def __init__(  # noqa: D107
-        self,
-        name: str,
-        /,
-        *,
-        new_module: str,
-        new_name: str | None = None,
-        message: str,
+        since: str | None = None,
+        message: str | None = None,
     ) -> None: ...
 
     @overload
@@ -100,18 +96,8 @@ class DeprecatedAlias:
         *,
         new_module: None = None,
         new_name: str,
-        since: str,
-    ) -> None: ...
-
-    @overload
-    def __init__(  # noqa: D107
-        self,
-        name: str,
-        /,
-        *,
-        new_module: None = None,
-        new_name: str,
-        message: str,
+        since: str | None = None,
+        message: str | None = None,
     ) -> None: ...
 
     def __init__(  # noqa: DOC502
@@ -126,26 +112,24 @@ class DeprecatedAlias:
     ) -> None:
         """Initialize this instance.
 
-        At least one of `new_module` and `new_name` must be given, and exactly one
-        of `since` and `message`.
+        At least one of `new_module` and `new_name` must be given.
 
         Args:
             name: The deprecated name, in the module defining the alias.
             new_module: The fully qualified name of the module the symbol lives in
                 now, if it moved out of the module defining the alias.
             new_name: The name the symbol has now, if it was renamed.
-            since: The version the alias is deprecated since, such as `"v1.2.0"`.
-                The warning then says `<old> is deprecated since <since>. Use
-                <new> instead.`
-            message: The template for the whole warning message instead, formatted
-                with `{old}` and `{new}`, the fully qualified names of the alias
-                and of the symbol it resolves to, as plain fields, without
-                attributes, indexes, conversions or format specs.
+            since: The version the alias is deprecated since, such as `"v1.2.0"`,
+                for the documentation only.
+            message: The template for the warning message, replacing the standard
+                `<old> is deprecated. Use <new> instead.`, formatted with `{old}`
+                and `{new}`, the fully qualified names of the alias and of the
+                symbol it resolves to, as plain fields, without attributes,
+                indexes, conversions or format specs.
 
         Raises:
-            TypeError: If an argument is not a string, if neither `new_module` nor
-                `new_name` is given, or if not exactly one of `since` and
-                `message` is.
+            TypeError: If an argument is not a string, or if neither `new_module`
+                nor `new_name` is given.
             ValueError: If `name`, `new_name` or a part of `new_module` is not an
                 identifier, if `since` is empty, or if `message` is not a template
                 with only plain `{old}` and `{new}` fields.
@@ -166,11 +150,11 @@ class DeprecatedAlias:
             new: The fully qualified name of the symbol it resolves to.
 
         Returns:
-            `<old> is deprecated since <since>. Use <new> instead.` if the alias
-                has a `since`, or its `message` formatted with `old` and `new`.
+            The alias' `message` formatted with `old` and `new`, or
+                `<old> is deprecated. Use <new> instead.` if it has none.
         """
         if self.message is None:
-            return f"{old} is deprecated since {self.since}. Use {new} instead."
+            return f"{old} is deprecated. Use {new} instead."
         return self.message.format(old=old, new=new)
 
     def _validate(self, new_name: str | None) -> None:
@@ -181,18 +165,12 @@ class DeprecatedAlias:
                 `name`, to tell whether it was given at all.
 
         Raises:
-            TypeError: If neither `new_module` nor `new_name` is given, or if not
-                exactly one of `since` and `message` is.
+            TypeError: If neither `new_module` nor `new_name` is given.
         """
         if self.new_module is None and new_name is None:
             raise TypeError(
                 f"the alias {self.name!r} needs new_module, new_name or both, "
                 "got neither"
-            )
-        if (self.since is None) == (self.message is None):
-            raise TypeError(
-                f"the alias {self.name!r} needs exactly one of since and message, "
-                f"got {'both' if self.since is not None else 'neither'}"
             )
         self._validate_name()
         self._validate_new_module()
@@ -315,9 +293,10 @@ def deprecated_aliases(  # noqa: DOC502
     The alias also stays the very same object, so [`isinstance`][] keeps working
     through both paths.
 
-    Each [`DeprecatedAlias`][frequenz.core.warnings.DeprecatedAlias] says when that
-    alias was deprecated or provides its own message, so aliases deprecated in
-    different releases can emit different warnings.
+    Each [`DeprecatedAlias`][frequenz.core.warnings.DeprecatedAlias] says where the
+    symbol is now and since which version the alias is deprecated, so aliases
+    deprecated in different releases are documented with their own version, and
+    can give their own warning message.
 
     Danger:
         Follow the usage example structure strictly. In particular never drop
@@ -347,8 +326,13 @@ def deprecated_aliases(  # noqa: DOC502
         ```
 
         Reaching `Decimal` through this module, say `mypkg.Decimal`, now emits a
-        `DeprecationWarning` saying `mypkg.Decimal is deprecated since v1.2.0. Use
+        `DeprecationWarning` saying `mypkg.Decimal is deprecated. Use
         decimal.Decimal instead.`
+
+        `since` doesn't change the warning: it is for
+        [`griffe-frequenz-core`](https://github.com/frequenz-floss/griffe-frequenz-core),
+        which documents the alias with a ``Deprecated since v1.2.0. Use
+        [`decimal.Decimal`][] instead.`` notice.
 
     Example: Renaming
         When the symbol was also renamed on the way out, `new_name` gives the name
@@ -397,9 +381,9 @@ def deprecated_aliases(  # noqa: DOC502
         ```
 
     Example: Custom message
-        When the standard wording is not enough, an alias can give its whole
-        message instead of `since`, as a template that gets the fully qualified old
-        and new names as `{old}` and `{new}`:
+        When the standard warning is not enough, an alias can give its own
+        message, as a template that gets the fully qualified old and new names as
+        `{old}` and `{new}`:
 
         ```python
         from typing import TYPE_CHECKING, TypeAlias
@@ -416,11 +400,17 @@ def deprecated_aliases(  # noqa: DOC502
                 DeprecatedAlias(
                     "Decimal",
                     new_module="decimal",
-                    message="{old} is deprecated since v1.2.0 and will be removed "
-                    "in v2.0.0. Use {new} instead.",
+                    since="v1.2.0",
+                    message="{old} is deprecated and will be removed in v2.0.0. "
+                    "Use {new} instead.",
                 ),
             )
         ```
+
+        The message replaces the warning only: the notice is still generated from
+        `since` and where the symbol is now. To say more in the documentation too,
+        write a `Deprecated:` admonition by hand in the docstring of `Decimal` in
+        the `if TYPE_CHECKING:` branch, which replaces the generated notice.
 
     Tip: Deprecating whole modules
         This function can't be used to deprecate a whole module. If you need to

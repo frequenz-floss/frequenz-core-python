@@ -3,6 +3,8 @@
 
 """Tests for the `frequenz.core.enum` module."""
 
+from typing import Any
+
 import pytest
 
 from frequenz.core.enum import (
@@ -58,6 +60,160 @@ def test_deprecated_member_helper_returns_wrapper() -> None:
     assert isinstance(wrapper, DeprecatedMember)
     assert wrapper.value == 123
     assert wrapper.message == "Value 123 is deprecated"
+    assert wrapper.new_name is None
+    assert wrapper.since is None
+
+    structured = deprecated_member(123, new_name="NEW", since="v1.2.3")
+    assert isinstance(structured, DeprecatedMember)
+    assert structured.value == 123
+    assert structured.message is None
+    assert structured.new_name == "NEW"
+    assert structured.since == "v1.2.3"
+
+
+class _RenamedEnum(Enum):
+    """A test enum with members deprecated in the structured form."""
+
+    OPEN = 1
+    FINISHED = 2
+    PENDING = deprecated_member(1, new_name="OPEN", since="v1.2.3")
+    DONE = deprecated_member(3, new_name="FINISHED")
+    CLOSED = deprecated_member(
+        4, "Closed tasks are gone, use FINISHED", new_name="FINISHED", since="v1.0.0"
+    )
+
+
+_RENAMED = f"{__name__}._RenamedEnum"
+
+
+def test_deprecated_member_generates_the_warning() -> None:
+    """Test that a member with only `new_name` warns with fully qualified names.
+
+    `since` is only for the documentation, so it doesn't show up in the warning.
+    """
+    pending = f"{_RENAMED}.PENDING is deprecated. Use {_RENAMED}.OPEN instead."
+    done = f"{_RENAMED}.DONE is deprecated. Use {_RENAMED}.FINISHED instead."
+
+    with pytest.deprecated_call() as recorder:
+        _ = _RenamedEnum.PENDING
+    _assert_deprecated_member(recorder, pending)
+
+    with pytest.deprecated_call() as recorder:
+        _ = _RenamedEnum["DONE"]
+    _assert_deprecated_member(recorder, done)
+
+    with pytest.deprecated_call() as recorder:
+        _ = _RenamedEnum(3)
+    _assert_deprecated_member(recorder, done)
+
+    assert _RenamedEnum.__deprecated_names__ == {
+        "PENDING": pending,
+        "DONE": done,
+        "CLOSED": "Closed tasks are gone, use FINISHED",
+    }
+
+
+def test_deprecated_member_message_wins() -> None:
+    """Test that a `message` replaces the generated warning, even with `new_name`."""
+    with pytest.deprecated_call() as recorder:
+        _ = _RenamedEnum.CLOSED
+    _assert_deprecated_member(recorder, "Closed tasks are gone, use FINISHED")
+
+
+def test_deprecated_member_generates_the_warning_for_nested_enums() -> None:
+    """Test that the generated warning uses the qualified name of the enum."""
+
+    class _Nested(Enum):
+        """An enum defined inside a function."""
+
+        NEW = 1
+        OLD = deprecated_member(1, new_name="NEW")
+
+    qualified = f"{__name__}.{_Nested.__qualname__}"
+    assert ".<locals>._Nested" in qualified
+    with pytest.deprecated_call() as recorder:
+        _ = _Nested.OLD
+    _assert_deprecated_member(
+        recorder, f"{qualified}.OLD is deprecated. Use {qualified}.NEW instead."
+    )
+
+
+def test_deprecated_member_needs_a_message_or_new_name() -> None:
+    """Test that a member saying neither what to warn nor what to use is refused.
+
+    The `type: ignore` comments are part of the test: mypy reports them as unused,
+    and fails, if the overloads ever accept these calls.
+    """
+    with pytest.raises(TypeError, match="needs message, new_name or both"):
+        deprecated_member(1)  # type: ignore[call-overload]
+    with pytest.raises(TypeError, match="needs message, new_name or both"):
+        deprecated_member(1, None, since="v1.2.3")  # type: ignore[call-overload]
+    with pytest.raises(TypeError, match="needs message, new_name or both"):
+        DeprecatedMember(1)  # type: ignore[call-overload]
+
+
+def test_deprecated_member_signature() -> None:
+    """Test that `new_name` and `since` are keyword-only."""
+    with pytest.raises(TypeError):
+        deprecated_member(1, None, "NEW")  # type: ignore[call-overload]
+
+
+@pytest.mark.parametrize(
+    "new_name, since, error",
+    [
+        (0, None, TypeError),
+        ("", None, ValueError),
+        ("Task.NEW", None, ValueError),
+        ("NEW", 0, TypeError),
+        ("NEW", "", ValueError),
+        ("NEW", "  ", ValueError),
+    ],
+    ids=[
+        "new-name-type",
+        "new-name-empty",
+        "new-name-dotted",
+        "since-type",
+        "since-empty",
+        "since-blank",
+    ],
+)
+def test_deprecated_member_rejects_bad_arguments(
+    new_name: Any, since: Any, error: type[Exception]
+) -> None:
+    """Test that `new_name` and `since` are checked when the member is declared."""
+    with pytest.raises(error):
+        deprecated_member(1, new_name=new_name, since=since)
+
+
+def test_deprecated_member_new_name_must_be_a_member() -> None:
+    """Test that a `new_name` that is not a member of the enum is refused."""
+    with pytest.raises(ValueError, match="is not a member of .*_Bad: 'MISSING'"):
+
+        class _Bad(Enum):
+            """An enum pointing at a member it doesn't have."""
+
+            NEW = 1
+            OLD = deprecated_member(1, new_name="MISSING")
+
+
+def test_deprecated_member_new_name_must_not_be_deprecated() -> None:
+    """Test that a `new_name` pointing at a deprecated member, itself included, is refused."""
+    with pytest.raises(ValueError, match="is 'OLDER', which is deprecated too"):
+
+        class _Chained(Enum):
+            """An enum pointing at another deprecated member."""
+
+            NEW = 1
+            OLDER = deprecated_member(1, new_name="NEW")
+            OLD = deprecated_member(1, new_name="OLDER")
+
+    with pytest.raises(ValueError, match="is 'OLD', which is deprecated too"):
+
+        class _Itself(Enum):
+            """An enum with a member pointing at itself."""
+
+            NEW = 1
+            OLD = deprecated_member(1, new_name="OLD")
 
 
 def test_deprecated_member_helper_enum_usage() -> None:

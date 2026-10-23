@@ -23,19 +23,14 @@ if TYPE_CHECKING:
     from fractions import Fraction as _Fraction
 
     Decimal: TypeAlias = _Decimal
-    """A decimal number.
-
-    Deprecated:
-        `tests.warnings.documented_aliases.Decimal` is deprecated since v1.2.0.
-        Use [decimal.Decimal][] instead.
-    """
+    """A decimal number."""
 
     Rational: TypeAlias = _Fraction
     """A rational number.
 
     Deprecated:
-        `tests.warnings.documented_aliases.Rational` is deprecated since v1.3.0.
-        Use [fractions.Fraction][] instead.
+        Deprecated since v1.3.0, and will be removed in v2.0.0. Use
+        [`fractions.Fraction`][] instead.
     """
 else:
     __getattr__ = deprecated_aliases(
@@ -45,7 +40,9 @@ else:
             "Rational",
             new_module="fractions",
             new_name="Fraction",
-            message="{old} is deprecated since v1.3.0. Use {new} instead.",
+            since="v1.3.0",
+            message="{old} is deprecated and will be removed in v2.0.0. "
+            "Use {new} instead.",
         ),
     )
 

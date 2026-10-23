@@ -104,12 +104,13 @@ from frequenz.core.enum import Enum, deprecated_member, unique
 class TaskStatus(Enum):
    OPEN = 1
    IN_PROGRESS = 2
-   # Duplicate values are fine with `@unique` as long as they are deprecated
-   PENDING = deprecated_member(1, "PENDING is deprecated, use OPEN instead")
-   DONE = deprecated_member(3, "DONE is deprecated, use FINISHED instead")
-   FINISHED = 4
+   # Duplicate values are fine with `@unique` as long as they are deprecated.
+   # `since` is for the documentation.
+   PENDING = deprecated_member(1, new_name="OPEN", since="v1.2.0")
 
-status1 = TaskStatus.PENDING  # Warns: "PENDING is deprecated, use OPEN instead"
+# Warns "<module>.TaskStatus.PENDING is deprecated. Use
+# <module>.TaskStatus.OPEN instead."
+status1 = TaskStatus.PENDING
 assert status1 is TaskStatus.OPEN
 ```
 
@@ -209,8 +210,8 @@ else:
     # imports included.
     __getattr__ = deprecated_aliases(
         __name__,
-        # Warns "<module>.Decimal is deprecated since v1.2.0. Use
-        # decimal.Decimal instead."
+        # Warns "<module>.Decimal is deprecated. Use decimal.Decimal instead.",
+        # `since` is for the documentation.
         DeprecatedAlias("Decimal", new_module="decimal", since="v1.2.0"),
         # Renamed on the way out
         DeprecatedAlias(

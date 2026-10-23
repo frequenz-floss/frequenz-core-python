@@ -19,8 +19,9 @@ from typing import Any, overload
 class DeprecatedAlias:
     """A symbol kept reachable from its old name.
 
-    Each one is an entry for [`deprecated_aliases`][..deprecated_aliases], which
-    has the examples.
+    Each one is an entry for
+    [`deprecated_aliases`][frequenz.core.warnings.deprecated_aliases], which has the
+    examples.
 
     The symbol moved to another module, `new_module`, was renamed, `new_name`, or
     both. Without `new_module` it is still in the module defining the alias, under
@@ -43,11 +44,15 @@ class DeprecatedAlias:
     """The fully qualified name of the module the symbol lives in now.
 
     `None` if it is still in the module defining the alias, under
-    [`new_name`][..new_name].
+    [`new_name`][frequenz.core.warnings.DeprecatedAlias.new_name].
     """
 
     new_name: str
-    """The name the symbol has now, [`name`][..name] if it was not renamed."""
+    """The name the symbol has now.
+
+    The same as [`name`][frequenz.core.warnings.DeprecatedAlias.name] if it was not
+    renamed.
+    """
 
     since: str | None
     """The version the alias is deprecated since, or `None` if it has a `message`.
@@ -310,9 +315,9 @@ def deprecated_aliases(  # noqa: DOC502
     The alias also stays the very same object, so [`isinstance`][] keeps working
     through both paths.
 
-    Each [`DeprecatedAlias`][..DeprecatedAlias] says when that alias was deprecated
-    or provides its own message, so aliases deprecated in different releases can
-    emit different warnings.
+    Each [`DeprecatedAlias`][frequenz.core.warnings.DeprecatedAlias] says when that
+    alias was deprecated or provides its own message, so aliases deprecated in
+    different releases can emit different warnings.
 
     Danger:
         Follow the usage example structure strictly. In particular never drop
@@ -443,8 +448,9 @@ def deprecated_aliases(  # noqa: DOC502
 
     Raises:
         TypeError: If an argument has the wrong type, including an alias that is
-            not a [`DeprecatedAlias`][..DeprecatedAlias]. Also later, when an alias
-            is reached, if it resolves to a module rather than to a symbol in one.
+            not a [`DeprecatedAlias`][frequenz.core.warnings.DeprecatedAlias]. Also
+            later, when an alias is reached, if it resolves to a module rather than
+            to a symbol in one.
         ValueError: If there are no aliases, if two of them have the same name, if
             one points at another alias in the same module, itself included, or if
             `stacklevel` is smaller than 1.

@@ -90,12 +90,14 @@ class asserting_no_warnings(contextlib.AbstractContextManager[None]):
         inside the block, however, inherit its recording and can still fail it.
 
     Warning: An `ignoring_warnings` block inside wins
-        [`ignoring_warnings`][..ignoring_warnings] puts its filter in front of
-        the one this block adds. So if the code under test ignores a warning
-        itself, that warning is never recorded and can't fail the block. This is
-        intended, since the code explicitly asked to ignore it. It does mean
-        that an [`asserting_no_deprecations`][..asserting_no_deprecations] block
-        around code using [`ignoring_deprecations`][..ignoring_deprecations]
+        [`ignoring_warnings`][frequenz.core.warnings.ignoring_warnings] puts its
+        filter in front of the one this block adds. So if the code under test
+        ignores a warning itself, that warning is never recorded and can't fail
+        the block. This is intended, since the code explicitly asked to ignore
+        it. It does mean that an
+        [`asserting_no_deprecations`][frequenz.core.warnings.asserting_no_deprecations]
+        block around code using
+        [`ignoring_deprecations`][frequenz.core.warnings.ignoring_deprecations]
         internally only checks the deprecations the code didn't silence, not all
         of them.
 
@@ -266,19 +268,20 @@ def asserting_no_deprecations(  # noqa: DOC502
 ) -> asserting_no_warnings:
     """Fail if a deprecation warning is raised inside the block.
 
-    This is [`asserting_no_warnings`][..asserting_no_warnings] for the usual case,
-    checking that the replacement for a deprecated symbol doesn't itself go through
-    the deprecated one.
+    This is [`asserting_no_warnings`][frequenz.core.warnings.asserting_no_warnings]
+    for the usual case, checking that the replacement for a deprecated symbol doesn't
+    itself go through the deprecated one.
 
     Warning: All limitations of `asserting_no_warnings()` apply
-        Read the documentation of [`asserting_no_warnings`][..asserting_no_warnings],
-        many limitations apply here too, as this is only a thin wrapper around it.
+        Read the documentation of
+        [`asserting_no_warnings`][frequenz.core.warnings.asserting_no_warnings], many
+        limitations apply here too, as this is only a thin wrapper around it.
 
     Pass `message` when the code under test legitimately deprecates something else,
     or reaches a third-party deprecation there is nothing to be done about: the block
     wraps the code being tested, so unlike an
-    [`ignoring_deprecations`][..ignoring_deprecations] block it can't be narrowed by
-    making it shorter.
+    [`ignoring_deprecations`][frequenz.core.warnings.ignoring_deprecations] block it
+    can't be narrowed by making it shorter.
 
     Example:
         ```python

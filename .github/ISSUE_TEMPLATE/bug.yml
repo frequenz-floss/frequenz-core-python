@@ -58,6 +58,7 @@ body:
         - Module utilities (part:module)
         - Logging utilities (part:logging)
         - Type hints and typing (part:typing)
+        - Warnings and deprecation utilities (part:warnings)
         - Unit, integration and performance tests (part:tests)
     validations:
       required: true

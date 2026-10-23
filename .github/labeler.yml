@@ -132,3 +132,11 @@
       - "src/frequenz/core/typing/**"
       - "tests/test_typing.py"
       - "tests/typing/**"
+
+"part:warnings":
+  - changed-files:
+    - any-glob-to-any-file:
+      - "src/frequenz/core/warnings.py"
+      - "src/frequenz/core/warnings/**"
+      - "tests/test_warnings.py"
+      - "tests/warnings/**"

@@ -406,23 +406,43 @@ else:
             class TaskStatus(Enum):
                 OPEN = 1
                 IN_PROGRESS = 2
-                PENDING = deprecated_member(1, "PENDING is deprecated, use OPEN instead")
-                DONE = deprecated_member(3, "DONE is deprecated, use FINISHED instead")
-                FINISHED = 4
+                FINISHED = 3
+                PENDING = deprecated_member(1, new_name="OPEN", since="v1.2.0")
+                CANCELLED = deprecated_member(
+                    4,
+                    "mypkg.TaskStatus.CANCELLED is deprecated. "
+                    "Cancelled tasks are deleted now.",
+                    since="v1.3.0",
+                )
 
-            # Accessing deprecated members:
-            status1 = TaskStatus.PENDING  # Warns: "PENDING is deprecated, use OPEN instead"
+            # Accessing deprecated members by name warns:
+            status1 = TaskStatus.PENDING
             assert status1 is TaskStatus.OPEN
 
-            status2 = TaskStatus["DONE"]  # Warns: "DONE is deprecated, use FINISHED instead"
-            assert status2 is TaskStatus.FINISHED
+            status2 = TaskStatus["PENDING"]
+            assert status2 is TaskStatus.OPEN
 
-            status3 = TaskStatus(1)  # No warning, resolves to OPEN which has a non-deprecated alias
+            # No warning, 1 resolves to OPEN, which is not deprecated
+            status3 = TaskStatus(1)
             assert status3 is TaskStatus.OPEN
 
-            status4 = TaskStatus(3)  # Warns: "DONE is deprecated, use FINISHED instead"
-            assert status4 is TaskStatus.FINISHED
+            # Warns, as all the names for 4 are deprecated
+            status4 = TaskStatus(4)
+            assert status4.name == "CANCELLED"
             ```
+
+            `PENDING` is a plain rename, so `new_name` is enough: reaching it warns
+            with `mypkg.TaskStatus.PENDING is deprecated. Use
+            mypkg.TaskStatus.OPEN instead.`, `mypkg` being the module defining
+            the enum, and
+            [`griffe-frequenz-core`](https://github.com/frequenz-floss/griffe-frequenz-core)
+            documents it with a ``Deprecated since v1.2.0. Use
+            [`OPEN`][mypkg.TaskStatus.OPEN] instead.`` notice.
+
+            `CANCELLED` has no member to point at, so it gives its own `message`,
+            starting with its fully qualified name. That replaces the warning
+            only, so its notice is written by hand, as a `Deprecated:` admonition
+            in the member's docstring.
         """
 
         __deprecated_names__: ClassVar[Mapping[str, str]]
@@ -448,7 +468,7 @@ def unique(enumeration: type[EnumT]) -> type[EnumT]:
             OPEN = 1
             IN_PROGRESS = 2
             # This is okay, as PENDING is a deprecated alias.
-            PENDING = deprecated_member(1, "Use OPEN instead")
+            PENDING = deprecated_member(1, new_name="OPEN", since="v1.2.0")
         ```
 
     Args:

@@ -37,17 +37,18 @@ class LessThanComparable(Protocol):
 
 
 LessThanComparableT = TypeVar("LessThanComparableT", bound=LessThanComparable)
-"""Type variable for a value that is [`LessThanComparable`][..LessThanComparable]."""
+"""Type variable for a [`LessThanComparable`][frequenz.core.math.LessThanComparable] value."""
 
 
 LessThanComparableOrNoneT = TypeVar(
     "LessThanComparableOrNoneT", bound=LessThanComparable | None
 )
-"""Type variable for a value that is [`LessThanComparable`][..LessThanComparable] or `None`.
+"""Type variable for an optional [`LessThanComparable`][frequenz.core.math.LessThanComparable].
 
 Deprecated:
     This type variable is deprecated since v1.4.0 and it will be removed in a
-    future version. Use [`LessThanComparableT`][..LessThanComparableT] instead.
+    future version. Use
+    [`LessThanComparableT`][frequenz.core.math.LessThanComparableT] instead.
 """
 
 
@@ -55,15 +56,19 @@ Deprecated:
 class Interval(Generic[LessThanComparableT]):
     """An interval to test if a value is within its limits.
 
-    The [`.start`][.start] and [`.end`][.end] are inclusive, meaning that the
-    [`.start`][.start] and [`.end`][.end] limits are included in the range when
-    checking if a value is contained by the interval.
+    The [`.start`][frequenz.core.math.Interval.start] and
+    [`.end`][frequenz.core.math.Interval.end] are inclusive, meaning that the
+    [`.start`][frequenz.core.math.Interval.start] and
+    [`.end`][frequenz.core.math.Interval.end] limits are included in the range
+    when checking if a value is contained by the interval.
 
-    If the [`.start`][.start] or [`.end`][.end] is `None`, it means that the interval
-    is unbounded in that direction. `None` is used purely as a bound marker; it is
-    never a value in the interval.
+    If the [`.start`][frequenz.core.math.Interval.start] or
+    [`.end`][frequenz.core.math.Interval.end] is `None`, it means that the
+    interval is unbounded in that direction. `None` is used purely as a bound
+    marker; it is never a value in the interval.
 
-    If [`.start`][.start] is bigger than [`.end`][.end], a `ValueError` is raised.
+    If [`.start`][frequenz.core.math.Interval.start] is bigger than
+    [`.end`][frequenz.core.math.Interval.end], a `ValueError` is raised.
 
     The type stored in the interval must be comparable, meaning that it must implement
     the `__lt__` method to be able to compare values.

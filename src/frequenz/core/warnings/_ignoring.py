@@ -276,14 +276,15 @@ def ignoring_deprecations(  # noqa: DOC502
 ) -> ignoring_warnings:
     """Ignore the deprecation warnings raised inside the block.
 
-    This is [`ignoring_warnings`][..ignoring_warnings] for the most common case,
-    library code that has to touch a symbol it deprecated itself. The user was
-    already warned by the deprecated symbol they used; warning them again from its
-    internals, about something they can do nothing about, is noise.
+    This is [`ignoring_warnings`][frequenz.core.warnings.ignoring_warnings] for the
+    most common case, library code that has to touch a symbol it deprecated itself.
+    The user was already warned by the deprecated symbol they used; warning them again
+    from its internals, about something they can do nothing about, is noise.
 
     Warning: All limitations of `ignoring_warnings()` apply
-        Read the documentation of [`ignoring_warnings`][..ignoring_warnings],
-        many limitations apply here too, as this is only a thin wrapper around it.
+        Read the documentation of
+        [`ignoring_warnings`][frequenz.core.warnings.ignoring_warnings], many
+        limitations apply here too, as this is only a thin wrapper around it.
 
     Tip:
         Wrap the call that reaches the deprecated symbol, not everything around

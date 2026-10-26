@@ -385,7 +385,7 @@ if TYPE_CHECKING:
 else:
 
     class Enum(enum.Enum, metaclass=DeprecatingEnumType):
-        """Base class for enums that support deprecated members.
+        '''Base class for enums that support deprecated members.
 
         This class extends the standard library's [`enum.Enum`][] to support marking
         certain members as deprecated. Deprecated members can be accessed, but doing so
@@ -412,8 +412,12 @@ else:
                     4,
                     "mypkg.TaskStatus.CANCELLED is deprecated. "
                     "Cancelled tasks are deleted now.",
-                    since="v1.3.0",
                 )
+                """The task was cancelled.
+
+                Deprecated:
+                    Deprecated since v1.3.0. Cancelled tasks are deleted now.
+                """
 
             # Accessing deprecated members by name warns:
             status1 = TaskStatus.PENDING
@@ -442,8 +446,9 @@ else:
             `CANCELLED` has no member to point at, so it gives its own `message`,
             starting with its fully qualified name. That replaces the warning
             only, so its notice is written by hand, as a `Deprecated:` admonition
-            in the member's docstring.
-        """
+            in the member's docstring. That notice says the version too, so
+            `since` is not needed.
+        '''
 
         __deprecated_names__: ClassVar[Mapping[str, str]]
         __deprecated_value_map__: ClassVar[Mapping[Self, str]]

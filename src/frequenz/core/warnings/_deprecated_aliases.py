@@ -304,6 +304,14 @@ def deprecated_aliases(  # noqa: DOC502
         assignment and treat every symbol in the module as [`Any`][typing.Any],
         effectively disabling type checking for the entire module.
 
+    Warning: Star imports
+        A star import (`from module import *`) only consults `__getattr__` for
+        the names listed in the module's `__all__`. Without an `__all__`, it
+        takes only the names the module defines itself, so the aliases silently
+        disappear from star imports, and code using them fails with a
+        [`NameError`][] instead of getting the deprecation warning. Keep every
+        alias in `__all__` until it is removed.
+
     Example: Usage
         This is how a module that used to define `Decimal` itself, and now gets it
         from [`decimal`][], keeps the old import path working:
@@ -312,6 +320,8 @@ def deprecated_aliases(  # noqa: DOC502
         from typing import TYPE_CHECKING, TypeAlias
 
         from frequenz.core.warnings import DeprecatedAlias, deprecated_aliases
+
+        __all__ = ["Decimal"]  # Keeps the alias in star imports
 
         if TYPE_CHECKING:
             # Private import, only for type checkers

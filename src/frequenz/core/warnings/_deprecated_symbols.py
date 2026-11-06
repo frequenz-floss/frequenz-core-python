@@ -174,43 +174,14 @@ class DeprecatedAlias:
                 f"the alias {self.name!r} needs new_module, new_name or both, "
                 "got neither"
             )
-        self._validate_name()
-        self._validate_new_module()
+        _check_name("alias", self.name)
+        if self.new_module is not None:
+            _check_dotted_name(
+                self.name, "new_module", self.new_module, "a module name"
+            )
         self._validate_new_name()
-        self._validate_since()
-        self._validate_message()
-
-    def _validate_name(self) -> None:
-        """Check that `name` is an identifier.
-
-        Raises:
-            TypeError: If it is not a string.
-            ValueError: If it is not an identifier.
-        """
-        if not isinstance(self.name, str):
-            raise TypeError(f"alias names must be str, got {self.name!r}")
-        if not self.name.isidentifier():
-            raise ValueError(f"alias names must be identifiers, got {self.name!r}")
-
-    def _validate_new_module(self) -> None:
-        """Check that `new_module`, if given, is a module name.
-
-        Raises:
-            TypeError: If it is not a string.
-            ValueError: If one of its dotted parts is not an identifier.
-        """
-        if self.new_module is None:
-            return
-        if not isinstance(self.new_module, str):
-            raise TypeError(
-                f"the new_module of {self.name!r} must be a str, "
-                f"got {self.new_module!r}"
-            )
-        if not all(part.isidentifier() for part in self.new_module.split(".")):
-            raise ValueError(
-                f"the new_module of {self.name!r} is not a module name: "
-                f"{self.new_module!r}"
-            )
+        _check_since(self.name, self.since)
+        _check_message(self.name, self.message, ("old", "new"))
 
     def _validate_new_name(self) -> None:
         """Check that `new_name` is an identifier.
@@ -228,55 +199,6 @@ class DeprecatedAlias:
                 f"the new_name of {self.name!r} is not an identifier: "
                 f"{self.new_name!r}"
             )
-
-    def _validate_since(self) -> None:
-        """Check that `since`, if given, is not empty.
-
-        Raises:
-            TypeError: If it is not a string.
-            ValueError: If it is empty or blank.
-        """
-        if self.since is None:
-            return
-        if not isinstance(self.since, str):
-            raise TypeError(
-                f"the since of {self.name!r} must be a str, got {self.since!r}"
-            )
-        if not self.since.strip():
-            raise ValueError(f"the since of {self.name!r} is empty")
-
-    def _validate_message(self) -> None:
-        """Check that `message`, if given, is a template with plain `{old}` and `{new}`.
-
-        Raises:
-            TypeError: If it is not a string.
-            ValueError: If it has a stray brace, or a replacement field other than a
-                plain `{old}` or `{new}`.
-        """
-        if self.message is None:
-            return
-        if not isinstance(self.message, str):
-            raise TypeError(
-                f"the message of {self.name!r} must be a str, got {self.message!r}"
-            )
-        problem = (
-            f"the message of {self.name!r} must be a template with only plain "
-            f"{{old}} and {{new}} fields, got {self.message!r}"
-        )
-        try:
-            # A stray brace raises here.
-            parsed = list(string.Formatter().parse(self.message))
-        except ValueError as error:
-            raise ValueError(problem) from error
-        # Anything more than a plain field can fail depending on the names it is
-        # formatted with, which are only known when the alias is reached, so
-        # formatting it once here can't tell: `{old.missing}` raises
-        # `AttributeError`, and `{old:{new}}` makes the new name a format spec.
-        if not all(
-            field in (None, "old", "new") and not spec and conversion is None
-            for _, field, spec, conversion in parsed
-        ):
-            raise ValueError(problem)
 
 
 def deprecated_symbols(  # noqa: DOC502
@@ -564,3 +486,96 @@ def deprecated_aliases(  # noqa: DOC502
     return deprecated_symbols(
         module, *aliases, category=category, stacklevel=stacklevel
     )
+
+
+def _check_name(kind: str, name: object) -> None:
+    """Check that the entry has a valid Python identifier.
+
+    Args:
+        kind: The entry type to show in error messages.
+        name: The name to check.
+
+    Raises:
+        TypeError: If it is not a string.
+        ValueError: If it is not an identifier.
+    """
+    if not isinstance(name, str):
+        raise TypeError(f"{kind} names must be str, got {name!r}")
+    if not name.isidentifier():
+        raise ValueError(f"{kind} names must be identifiers, got {name!r}")
+
+
+def _check_dotted_name(name: str, field: str, value: object, what: str) -> None:
+    """Check that each part of a dotted name is an identifier.
+
+    Args:
+        name: The name of the entry, for the error messages.
+        field: The name of the field, for the error messages.
+        value: The value of the field.
+        what: What the field should be, for the error messages.
+
+    Raises:
+        TypeError: If it is not a string.
+        ValueError: If one of its dotted parts is not an identifier.
+    """
+    if not isinstance(value, str):
+        raise TypeError(f"the {field} of {name!r} must be a str, got {value!r}")
+    if not all(part.isidentifier() for part in value.split(".")):
+        raise ValueError(f"the {field} of {name!r} is not {what}: {value!r}")
+
+
+def _check_since(name: str, since: object) -> None:
+    """Check that `since` is a nonempty string or `None`.
+
+    Args:
+        name: The name of the entry, for the error messages.
+        since: The `since` to check.
+
+    Raises:
+        TypeError: If it is not a string.
+        ValueError: If it is empty or blank.
+    """
+    if since is None:
+        return
+    if not isinstance(since, str):
+        raise TypeError(f"the since of {name!r} must be a str, got {since!r}")
+    if not since.strip():
+        raise ValueError(f"the since of {name!r} is empty")
+
+
+def _check_message(name: str, message: object, fields: tuple[str, ...]) -> None:
+    """Check that a warning template uses only the allowed plain fields.
+
+    Args:
+        name: The name of the entry, for the error messages.
+        message: The `message` to check.
+        fields: The names of the fields it may use.
+
+    Raises:
+        TypeError: If it is not a string.
+        ValueError: If it has a stray brace, or a replacement field other than one
+            of `fields`, plain.
+    """
+    if message is None:
+        return
+    if not isinstance(message, str):
+        raise TypeError(f"the message of {name!r} must be a str, got {message!r}")
+    allowed = " and ".join(f"{{{field}}}" for field in fields)
+    problem = (
+        f"the message of {name!r} must be a template with only plain {allowed} "
+        f"fields, got {message!r}"
+    )
+    try:
+        # A stray brace raises here.
+        parsed = list(string.Formatter().parse(message))
+    except ValueError as error:
+        raise ValueError(problem) from error
+    # Anything more than a plain field can fail depending on the names it is
+    # formatted with, which are only known when the entry is reached, so
+    # formatting it once here can't tell: `{old.missing}` raises
+    # `AttributeError`, and `{old:{new}}` makes the new name a format spec.
+    if not all(
+        (field is None or field in fields) and not spec and conversion is None
+        for _, field, spec, conversion in parsed
+    ):
+        raise ValueError(problem)

@@ -197,6 +197,9 @@ from typing import TYPE_CHECKING, TypeAlias
 
 from frequenz.core.warnings import DeprecatedAlias, deprecated_aliases
 
+# List the aliases, or star imports won't see them.
+__all__ = ["Decimal", "Rational"]
+
 if TYPE_CHECKING:
     # Type checkers can't see the runtime `__getattr__` in the `else` branch.
     from decimal import Decimal as _Decimal

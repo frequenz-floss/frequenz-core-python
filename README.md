@@ -195,7 +195,7 @@ object so `isinstance` keeps working through both paths:
 ```python
 from typing import TYPE_CHECKING, TypeAlias
 
-from frequenz.core.warnings import DeprecatedAlias, deprecated_aliases
+from frequenz.core.warnings import DeprecatedAlias, deprecated_symbols
 
 # List the aliases, or star imports won't see them.
 __all__ = ["Decimal", "Rational"]
@@ -211,7 +211,7 @@ else:
     # In the `else`, never at module level: a `__getattr__` mypy can see makes
     # every name it doesn't know in this module `Any`, typos in downstream
     # imports included.
-    __getattr__ = deprecated_aliases(
+    __getattr__ = deprecated_symbols(
         __name__,
         # Warns "<module>.Decimal is deprecated. Use decimal.Decimal instead.",
         # `since` is for the documentation.

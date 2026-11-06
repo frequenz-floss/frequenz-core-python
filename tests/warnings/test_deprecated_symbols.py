@@ -1,7 +1,7 @@
 # License: MIT
 # Copyright © 2026 Frequenz Energy-as-a-Service GmbH
 
-"""Tests for `deprecated_aliases()`."""
+"""Tests for `deprecated_symbols()`."""
 
 import dataclasses
 import decimal
@@ -12,13 +12,14 @@ from typing import Any
 
 import pytest
 
+from frequenz.core import warnings as core_warnings
 from frequenz.core.warnings import (
     DeprecatedAlias,
-    _deprecated_aliases,
+    _deprecated_symbols,
     asserting_no_deprecations,
-    deprecated_aliases,
+    deprecated_symbols,
 )
-from tests.warnings import documented_aliases
+from tests.warnings import documented_symbols
 
 _MESSAGE = "{old} is deprecated and will be removed. Use {new} instead."
 
@@ -221,7 +222,7 @@ def test_deprecated_aliases_warns_and_returns_the_real_object() -> None:
     wording; `Fraction` gives a message of its own.
     """
     module = ModuleType("old_home")
-    module.__getattr__ = deprecated_aliases(  # type: ignore[method-assign]
+    module.__getattr__ = deprecated_symbols(  # type: ignore[method-assign]
         module.__name__,
         _DECIMAL,
         DeprecatedAlias(
@@ -246,7 +247,7 @@ def test_deprecated_aliases_warns_and_returns_the_real_object() -> None:
 def test_deprecated_aliases_rejects_unknown_names() -> None:
     """Test that a name that is not an alias raises as a missing attribute would."""
     module = ModuleType("old_home_missing")
-    module.__getattr__ = deprecated_aliases(  # type: ignore[method-assign]
+    module.__getattr__ = deprecated_symbols(  # type: ignore[method-assign]
         module.__name__, _DECIMAL
     )
 
@@ -326,13 +327,13 @@ def test_deprecated_aliases_rejects_a_bad_table(
     point at each other.
     """
     with pytest.raises(error):
-        deprecated_aliases(*args, **kwargs)
+        deprecated_symbols(*args, **kwargs)
 
 
 def test_deprecated_aliases_follows_renames() -> None:
     """Test that an alias can point to a symbol with a different name."""
     module = ModuleType("old_home_renamed")
-    module.__getattr__ = deprecated_aliases(  # type: ignore[method-assign]
+    module.__getattr__ = deprecated_symbols(  # type: ignore[method-assign]
         module.__name__,
         DeprecatedAlias(
             "Rational", new_module="fractions", new_name="Fraction", message=_MESSAGE
@@ -359,7 +360,7 @@ def test_deprecated_aliases_follows_renames_in_place(
     """
     module = ModuleType("old_home_in_place")
     module.Widget = fractions.Fraction  # type: ignore[attr-defined]
-    module.__getattr__ = deprecated_aliases(  # type: ignore[method-assign]
+    module.__getattr__ = deprecated_symbols(  # type: ignore[method-assign]
         module.__name__,
         DeprecatedAlias("Gadget", new_name="Widget", since="v1.2.3"),
     )
@@ -378,7 +379,7 @@ def test_deprecated_aliases_follows_renames_in_place(
 def test_deprecated_aliases_customises_the_warning() -> None:
     """Test the category and stacklevel overrides."""
     module = ModuleType("old_home_custom")
-    module.__getattr__ = deprecated_aliases(  # type: ignore[method-assign]
+    module.__getattr__ = deprecated_symbols(  # type: ignore[method-assign]
         module.__name__,
         _DECIMAL,
         category=FutureWarning,
@@ -392,7 +393,7 @@ def test_deprecated_aliases_customises_the_warning() -> None:
         assert module.Decimal is decimal.Decimal
 
     # stacklevel=1, so the warning is attributed to the helper itself.
-    assert caught[0].filename == _deprecated_aliases.__file__
+    assert caught[0].filename == _deprecated_symbols.__file__
 
 
 @pytest.mark.parametrize(
@@ -413,7 +414,7 @@ def test_deprecated_aliases_rejects_bad_customisation(
 ) -> None:
     """Test that the overrides are checked when the aliases are declared."""
     with pytest.raises(error):
-        deprecated_aliases("old_home_bad", _DECIMAL, **kwargs)
+        deprecated_symbols("old_home_bad", _DECIMAL, **kwargs)
 
 
 def test_deprecated_aliases_in_a_real_module() -> None:
@@ -428,35 +429,35 @@ def test_deprecated_aliases_in_a_real_module() -> None:
     with pytest.warns(
         DeprecationWarning,
         match=(
-            "^tests.warnings.documented_aliases.Decimal is deprecated. "
+            "^tests.warnings.documented_symbols.Decimal is deprecated. "
             "Use decimal.Decimal instead.$"
         ),
     ):
-        assert documented_aliases.Decimal is decimal.Decimal
+        assert documented_symbols.Decimal is decimal.Decimal
 
     with pytest.warns(
         DeprecationWarning,
         match=(
-            "^tests.warnings.documented_aliases.Rational is deprecated and will be "
+            "^tests.warnings.documented_symbols.Rational is deprecated and will be "
             "removed in v2.0.0. Use fractions.Fraction instead.$"
         ),
     ):
-        assert documented_aliases.Rational is fractions.Fraction
+        assert documented_symbols.Rational is fractions.Fraction
 
     # What the package defines itself is untouched: the `__getattr__` is only
     # consulted for names the module doesn't have.
     with asserting_no_deprecations():
-        assert documented_aliases.kept() == "kept"
+        assert documented_symbols.kept() == "kept"
 
     with pytest.raises(
         AttributeError,
-        match="module 'tests.warnings.documented_aliases' has no attribute 'Nope'",
+        match="module 'tests.warnings.documented_symbols' has no attribute 'Nope'",
     ):
         # The `type: ignore` is the point of the `else:` branch, not a nuisance:
         # with the `__getattr__` at module level mypy would type this `Any` and
         # say nothing, here and in every downstream import of a name that never
         # existed.
-        _ = documented_aliases.Nope  # type: ignore[attr-defined]
+        _ = documented_symbols.Nope  # type: ignore[attr-defined]
 
 
 def test_deprecated_aliases_reach_star_imports() -> None:
@@ -470,20 +471,20 @@ def test_deprecated_aliases_reach_star_imports() -> None:
 
     with pytest.warns(DeprecationWarning) as caught:
         # pylint: disable-next=exec-used
-        exec("from tests.warnings.documented_aliases import *", namespace)
+        exec("from tests.warnings.documented_symbols import *", namespace)
 
-    assert documented_aliases.__all__ == ["Decimal", "Rational", "kept"]
+    assert documented_symbols.__all__ == ["Decimal", "Rational", "kept"]
     assert namespace["Decimal"] is decimal.Decimal
     assert namespace["Rational"] is fractions.Fraction
-    assert namespace["kept"] is documented_aliases.kept
+    assert namespace["kept"] is documented_symbols.kept
     # Each name in a package's `__all__` is asked for twice, once by the import
     # machinery finding out whether it names a submodule and once by the wildcard
     # import itself, so every alias warns more than once here. Which messages come
     # out is the part worth asserting; how many times CPython looks them up is not.
     assert {str(warning.message) for warning in caught} == {
-        "tests.warnings.documented_aliases.Decimal is deprecated. "
+        "tests.warnings.documented_symbols.Decimal is deprecated. "
         "Use decimal.Decimal instead.",
-        "tests.warnings.documented_aliases.Rational is deprecated and will be "
+        "tests.warnings.documented_symbols.Rational is deprecated and will be "
         "removed in v2.0.0. Use fractions.Fraction instead.",
     }
 
@@ -498,7 +499,7 @@ def test_deprecated_aliases_refuses_a_module_target() -> None:
     path.
     """
     module = ModuleType("old_home_package")
-    module.__getattr__ = deprecated_aliases(  # type: ignore[method-assign]
+    module.__getattr__ = deprecated_symbols(  # type: ignore[method-assign]
         module.__name__,
         # os.path is a module
         DeprecatedAlias("path", new_module="os", message=_MESSAGE),
@@ -512,3 +513,34 @@ def test_deprecated_aliases_refuses_a_module_target() -> None:
     with asserting_no_deprecations():
         with pytest.raises(TypeError):
             _ = module.path
+
+
+def test_deprecated_aliases_is_a_deprecated_name_for_deprecated_symbols() -> None:
+    """Test that the old name still builds the same `__getattr__`, warning once.
+
+    It warns when it is called, which is when the module defining the aliases is
+    imported, and the `__getattr__` it returns warns about each alias as usual.
+    """
+    module = ModuleType("old_home_old_name")
+    with pytest.deprecated_call(
+        match=(
+            "^frequenz.core.warnings.deprecated_aliases is deprecated. "
+            "Use frequenz.core.warnings.deprecated_symbols instead.$"
+        )
+    ) as caught:
+        module.__getattr__ = core_warnings.deprecated_aliases(  # type: ignore[method-assign]
+            module.__name__, _DECIMAL
+        )
+
+    assert len(caught) == 1
+    # The call is reported, not the wrapper.
+    assert caught[0].filename == __file__
+
+    with pytest.warns(
+        DeprecationWarning,
+        match="^old_home_old_name.Decimal is deprecated. Use decimal.Decimal instead.$",
+    ) as caught:
+        assert module.Decimal is decimal.Decimal
+
+    # The default stacklevel still points at the code reaching for the alias.
+    assert caught[0].filename == __file__

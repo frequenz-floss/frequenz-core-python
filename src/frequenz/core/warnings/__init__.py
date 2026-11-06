@@ -11,7 +11,7 @@ to silence warnings around a piece of code, without the side effect that
 common case of a library having to touch a symbol it deprecated itself.
 
 It also provides
-[`deprecated_aliases`][frequenz.core.warnings.deprecated_aliases], to keep the old
+[`deprecated_symbols`][frequenz.core.warnings.deprecated_symbols], to keep the old
 import path of a symbol that moved to another module, or was renamed, working,
 warning whoever uses it, with a
 [`DeprecatedAlias`][frequenz.core.warnings.DeprecatedAlias] entry saying where it
@@ -61,7 +61,11 @@ With [`warnings.catch_warnings`][] in `convert()` the same loop shows the
 """
 
 from ._asserting import asserting_no_deprecations, asserting_no_warnings
-from ._deprecated_aliases import DeprecatedAlias, deprecated_aliases
+from ._deprecated_symbols import (
+    DeprecatedAlias,
+    deprecated_aliases,
+    deprecated_symbols,
+)
 from ._ignoring import ignoring_deprecations, ignoring_warnings
 
 __all__ = [
@@ -69,6 +73,7 @@ __all__ = [
     "asserting_no_deprecations",
     "asserting_no_warnings",
     "deprecated_aliases",
+    "deprecated_symbols",
     "ignoring_deprecations",
     "ignoring_warnings",
 ]

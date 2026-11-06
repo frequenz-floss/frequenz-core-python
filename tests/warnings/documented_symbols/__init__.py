@@ -1,7 +1,7 @@
 # License: MIT
 # Copyright © 2026 Frequenz Energy-as-a-Service GmbH
 
-"""A package written the way `deprecated_aliases()` documents, for the tests.
+"""A package written the way `deprecated_symbols()` documents, for the tests.
 
 The other tests build a `ModuleType` and assign the `__getattr__` onto it, which
 exercises the function but not the shape the docstring tells people to write: the
@@ -12,7 +12,7 @@ tests importing from here fail if the documented pattern stops working.
 
 from typing import TYPE_CHECKING, TypeAlias
 
-from frequenz.core.warnings import DeprecatedAlias, deprecated_aliases
+from frequenz.core.warnings import DeprecatedAlias, deprecated_symbols
 
 __all__ = ["Decimal", "Rational", "kept"]
 
@@ -33,7 +33,7 @@ if TYPE_CHECKING:
         [`fractions.Fraction`][] instead.
     """
 else:
-    __getattr__ = deprecated_aliases(
+    __getattr__ = deprecated_symbols(
         __name__,
         DeprecatedAlias("Decimal", new_module="decimal", since="v1.2.0"),
         DeprecatedAlias(

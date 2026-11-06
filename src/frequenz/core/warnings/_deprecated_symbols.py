@@ -1,7 +1,7 @@
 # License: MIT
 # Copyright © 2026 Frequenz Energy-as-a-Service GmbH
 
-"""Keeping the old import path of a symbol that moved to another module.
+"""Deprecating module-level symbols that can't take a `@deprecated` decorator.
 
 See the package documentation for the background.
 """
@@ -14,13 +14,15 @@ from dataclasses import dataclass
 from types import ModuleType
 from typing import Any, overload
 
+from typing_extensions import deprecated
+
 
 @dataclass(frozen=True, init=False, slots=True)
 class DeprecatedAlias:
     """A symbol kept reachable from its old name.
 
     Each one is an entry for
-    [`deprecated_aliases`][frequenz.core.warnings.deprecated_aliases], which has the
+    [`deprecated_symbols`][frequenz.core.warnings.deprecated_symbols], which has the
     examples.
 
     The symbol moved to another module, `new_module`, was renamed, `new_name`, or
@@ -277,7 +279,7 @@ class DeprecatedAlias:
             raise ValueError(problem)
 
 
-def deprecated_aliases(  # noqa: DOC502
+def deprecated_symbols(  # noqa: DOC502
     module: str,
     /,
     *aliases: DeprecatedAlias,
@@ -319,7 +321,7 @@ def deprecated_aliases(  # noqa: DOC502
         ```python
         from typing import TYPE_CHECKING, TypeAlias
 
-        from frequenz.core.warnings import DeprecatedAlias, deprecated_aliases
+        from frequenz.core.warnings import DeprecatedAlias, deprecated_symbols
 
         __all__ = ["Decimal"]  # Keeps the alias in star imports
 
@@ -329,7 +331,7 @@ def deprecated_aliases(  # noqa: DOC502
 
             Decimal: TypeAlias = _Decimal
         else:
-            __getattr__ = deprecated_aliases(
+            __getattr__ = deprecated_symbols(
                 __name__,
                 DeprecatedAlias("Decimal", new_module="decimal", since="v1.2.0"),
             )
@@ -351,14 +353,14 @@ def deprecated_aliases(  # noqa: DOC502
         ```python
         from typing import TYPE_CHECKING, TypeAlias
 
-        from frequenz.core.warnings import DeprecatedAlias, deprecated_aliases
+        from frequenz.core.warnings import DeprecatedAlias, deprecated_symbols
 
         if TYPE_CHECKING:
             from fractions import Fraction as _Fraction
 
             Rational: TypeAlias = _Fraction
         else:
-            __getattr__ = deprecated_aliases(
+            __getattr__ = deprecated_symbols(
                 __name__,
                 DeprecatedAlias(
                     "Rational",
@@ -374,7 +376,7 @@ def deprecated_aliases(  # noqa: DOC502
         ```python
         from typing import TYPE_CHECKING, TypeAlias
 
-        from frequenz.core.warnings import DeprecatedAlias, deprecated_aliases
+        from frequenz.core.warnings import DeprecatedAlias, deprecated_symbols
 
 
         class Widget:
@@ -384,7 +386,7 @@ def deprecated_aliases(  # noqa: DOC502
         if TYPE_CHECKING:
             Gadget: TypeAlias = Widget
         else:
-            __getattr__ = deprecated_aliases(
+            __getattr__ = deprecated_symbols(
                 __name__,
                 DeprecatedAlias("Gadget", new_name="Widget", since="v1.4.0"),
             )
@@ -398,14 +400,14 @@ def deprecated_aliases(  # noqa: DOC502
         ```python
         from typing import TYPE_CHECKING, TypeAlias
 
-        from frequenz.core.warnings import DeprecatedAlias, deprecated_aliases
+        from frequenz.core.warnings import DeprecatedAlias, deprecated_symbols
 
         if TYPE_CHECKING:
             from decimal import Decimal as _Decimal
 
             Decimal: TypeAlias = _Decimal
         else:
-            __getattr__ = deprecated_aliases(
+            __getattr__ = deprecated_symbols(
                 __name__,
                 DeprecatedAlias(
                     "Decimal",
@@ -425,7 +427,7 @@ def deprecated_aliases(  # noqa: DOC502
     Tip: Deprecating whole modules
         This function can't be used to deprecate a whole module. If you need to
         do that, you can keep a real `__init__.py` at the old path, with a
-        `__getattr__ = deprecated_aliases(...)` that includes all the symbols
+        `__getattr__ = deprecated_symbols(...)` that includes all the symbols
         that used to be reachable there.
 
     Warning: Security Warning
@@ -524,3 +526,41 @@ def deprecated_aliases(  # noqa: DOC502
         return value
 
     return module_getattr
+
+
+@deprecated(
+    "frequenz.core.warnings.deprecated_aliases is deprecated. "
+    "Use frequenz.core.warnings.deprecated_symbols instead."
+)
+def deprecated_aliases(  # noqa: DOC502
+    module: str,
+    /,
+    *aliases: DeprecatedAlias,
+    category: type[Warning] = DeprecationWarning,
+    stacklevel: int = 2,
+) -> Callable[[str], Any]:
+    """Build a module `__getattr__` that warns about deprecated aliases.
+
+    Deprecated:
+        Deprecated since v1.7.0. Use
+        [`deprecated_symbols`][frequenz.core.warnings.deprecated_symbols]
+        with the same arguments. The old function will be removed in v2.0.0.
+
+    Args:
+        module: The fully qualified name of the module defining the aliases.
+        *aliases: The deprecated aliases, at least one, each with its own name.
+        category: The category of the warning to emit.
+        stacklevel: How far up the stack the warning is reported, counting from the
+            `__getattr__` itself.
+
+    Returns:
+        A function suitable for use as the module's `__getattr__`.
+
+    Raises:
+        TypeError: If an argument has the wrong type.
+        ValueError: If the aliases are not valid together, or if `stacklevel` is
+            smaller than 1.
+    """
+    return deprecated_symbols(
+        module, *aliases, category=category, stacklevel=stacklevel
+    )

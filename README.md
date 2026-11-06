@@ -223,6 +223,38 @@ else:
     )
 ```
 
+To deprecate a module constant or type variable, pass a `DeprecatedSymbol` to
+`deprecated_symbols()`. In this example, `TIMEOUT_SECONDS` still returns `30.0`,
+but the warning tells callers to use `TIMEOUT`:
+
+```python
+from datetime import timedelta
+from typing import TYPE_CHECKING, Final
+
+from frequenz.core.warnings import DeprecatedSymbol, deprecated_symbols
+
+__all__ = ["TIMEOUT", "TIMEOUT_SECONDS"]
+
+TIMEOUT: Final = timedelta(seconds=30)
+
+# Private: `__getattr__` is only called for names the module doesn't have.
+_TIMEOUT_SECONDS: Final = 30.0
+
+if TYPE_CHECKING:
+    TIMEOUT_SECONDS: Final = _TIMEOUT_SECONDS
+else:
+    __getattr__ = deprecated_symbols(
+        __name__,
+        # Warns "mypkg.TIMEOUT_SECONDS is deprecated. Use mypkg.TIMEOUT instead."
+        DeprecatedSymbol(
+            "TIMEOUT_SECONDS",
+            value=_TIMEOUT_SECONDS,
+            replacement="mypkg.TIMEOUT",
+            since="v1.5.0",
+        ),
+    )
+```
+
 And check in a test that a piece of code doesn't warn, without the `"error"`
 filter that would make `warnings.warn()` raise inside the code under test:
 

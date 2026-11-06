@@ -8,13 +8,14 @@ import decimal
 import fractions
 import sys
 from types import ModuleType
-from typing import Any
+from typing import Any, TypeVar
 
 import pytest
 
 from frequenz.core import warnings as core_warnings
 from frequenz.core.warnings import (
     DeprecatedAlias,
+    DeprecatedSymbol,
     _deprecated_symbols,
     asserting_no_deprecations,
     deprecated_symbols,
@@ -210,6 +211,146 @@ def test_deprecated_alias_formats_its_message() -> None:
     assert message.format_message(**names) == (
         "old_home.Decimal is gone, use decimal.Decimal ({v2})"
     )
+
+
+_SENTINEL = object()
+
+
+def test_deprecated_symbol_keeps_what_it_was_given() -> None:
+    """Test that a symbol keeps its fields as given, and can't be changed."""
+    symbol = DeprecatedSymbol(
+        "OLD",
+        value=_SENTINEL,
+        replacement="mypkg.NEW",
+        since="v1.2.3",
+        message=_MESSAGE,
+    )
+
+    assert symbol.name == "OLD"
+    assert symbol.value is _SENTINEL
+    assert symbol.replacement == "mypkg.NEW"
+    assert symbol.since == "v1.2.3"
+    assert symbol.message == _MESSAGE
+    assert symbol == DeprecatedSymbol(
+        "OLD",
+        value=_SENTINEL,
+        replacement="mypkg.NEW",
+        since="v1.2.3",
+        message=_MESSAGE,
+    )
+    with pytest.raises(dataclasses.FrozenInstanceError):
+        symbol.value = None  # type: ignore[misc]
+
+    bare = DeprecatedSymbol("OLD", value=None)
+    assert bare.value is None
+    assert bare.replacement is None
+    assert bare.since is None
+    assert bare.message is None
+
+
+@pytest.mark.parametrize(
+    "args, kwargs",
+    [
+        (("OLD", 1), {}),
+        ((), {"name": "OLD", "value": 1}),
+        (("OLD",), {}),
+        (("OLD", 1, "mypkg.NEW"), {}),
+    ],
+    ids=["value-positional", "name-by-keyword", "no-value", "replacement-positional"],
+)
+def test_deprecated_symbol_signature(
+    args: tuple[Any, ...], kwargs: dict[str, Any]
+) -> None:
+    """Test that the name is positional-only, and the rest keyword-only."""
+    with pytest.raises(TypeError):
+        DeprecatedSymbol(*args, **kwargs)
+
+
+@pytest.mark.parametrize(
+    "name, replacement, since, message, error",
+    [
+        (0, None, None, None, TypeError),
+        ("", None, None, None, ValueError),
+        ("O LD", None, None, None, ValueError),
+        ("OLD", 0, None, None, TypeError),
+        ("OLD", "", None, None, ValueError),
+        ("OLD", "mypkg..NEW", None, None, ValueError),
+        ("OLD", "mypkg.NEW-2", None, None, ValueError),
+        ("OLD", None, 0, None, TypeError),
+        ("OLD", None, " ", None, ValueError),
+        ("OLD", None, None, 0, TypeError),
+        ("OLD", None, None, "{old} is gone, see {'here': 1}", ValueError),
+        ("OLD", None, None, "{old} is gone, use {new}", ValueError),
+        ("OLD", "mypkg.NEW", None, "{old} is gone, use {where}", ValueError),
+        ("OLD", "mypkg.NEW", None, "{} is gone, use {new}", ValueError),
+        ("OLD", "mypkg.NEW", None, "{old.missing} is gone", ValueError),
+        ("OLD", "mypkg.NEW", None, "{old!r} is gone", ValueError),
+        ("OLD", "mypkg.NEW", None, "{old:>20} is gone", ValueError),
+    ],
+    ids=[
+        "name-type",
+        "name-empty",
+        "name-not-identifier",
+        "replacement-type",
+        "replacement-empty",
+        "replacement-empty-part",
+        "replacement-not-identifier",
+        "since-type",
+        "since-blank",
+        "message-type",
+        "message-stray-brace",
+        "message-new-without-replacement",
+        "message-unknown-field",
+        "message-auto-numbered-field",
+        "message-attribute",
+        "message-conversion",
+        "message-format-spec",
+    ],
+)
+def test_deprecated_symbol_rejects_bad_arguments(
+    name: Any,
+    replacement: Any,
+    since: Any,
+    message: Any,
+    error: type[Exception],
+) -> None:
+    """Test that a symbol is checked when it is created, like an alias.
+
+    `{new}` is only there to stand for the replacement, so a symbol without one
+    can't use it.
+    """
+    with pytest.raises(error):
+        DeprecatedSymbol(
+            name, value=1, replacement=replacement, since=since, message=message
+        )
+
+
+def test_deprecated_symbol_formats_its_message() -> None:
+    """Test the standard messages, with and without a replacement, and `message`.
+
+    `since` never shows up in any: it is only for the documentation.
+    """
+    old = "mypkg.OLD"
+
+    bare = DeprecatedSymbol("OLD", value=1, since="v{1}.2")
+    assert bare.format_message(old=old) == "mypkg.OLD is deprecated."
+
+    replaced = DeprecatedSymbol("OLD", value=1, replacement="mypkg.NEW")
+    assert replaced.format_message(old=old) == (
+        "mypkg.OLD is deprecated. Use mypkg.NEW instead."
+    )
+
+    message = DeprecatedSymbol(
+        "OLD", value=1, message="{old} is gone ({{v2}}), do it yourself"
+    )
+    assert message.format_message(old=old) == (
+        "mypkg.OLD is gone ({v2}), do it yourself"
+    )
+
+    both = DeprecatedSymbol(
+        "OLD", value=1, replacement="mypkg.NEW", message="{old} is gone, see {new}"
+    )
+    assert both.format_message(old=old) == "mypkg.OLD is gone, see mypkg.NEW"
 
 
 _DECIMAL = DeprecatedAlias("Decimal", new_module="decimal", since="v1.2.3")
@@ -444,10 +585,29 @@ def test_deprecated_aliases_in_a_real_module() -> None:
     ):
         assert documented_symbols.Rational is fractions.Fraction
 
+    with pytest.warns(
+        DeprecationWarning,
+        match=(
+            "^tests.warnings.documented_symbols.TIMEOUT_SECONDS is deprecated. "
+            "Use tests.warnings.documented_symbols.TIMEOUT instead.$"
+        ),
+    ):
+        assert documented_symbols.TIMEOUT_SECONDS == 30.0
+
+    with pytest.warns(
+        DeprecationWarning,
+        match=(
+            "^tests.warnings.documented_symbols.ValueT is deprecated and will be "
+            "removed in v2.0.0. Define your own type variable instead.$"
+        ),
+    ):
+        assert isinstance(documented_symbols.ValueT, TypeVar)
+
     # What the package defines itself is untouched: the `__getattr__` is only
     # consulted for names the module doesn't have.
     with asserting_no_deprecations():
         assert documented_symbols.kept() == "kept"
+        assert documented_symbols.TIMEOUT.total_seconds() == 30.0
 
     with pytest.raises(
         AttributeError,
@@ -473,19 +633,33 @@ def test_deprecated_aliases_reach_star_imports() -> None:
         # pylint: disable-next=exec-used
         exec("from tests.warnings.documented_symbols import *", namespace)
 
-    assert documented_symbols.__all__ == ["Decimal", "Rational", "kept"]
+    assert documented_symbols.__all__ == [
+        "TIMEOUT",
+        "TIMEOUT_SECONDS",
+        "Decimal",
+        "Rational",
+        "ValueT",
+        "kept",
+    ]
     assert namespace["Decimal"] is decimal.Decimal
     assert namespace["Rational"] is fractions.Fraction
+    assert namespace["TIMEOUT_SECONDS"] == 30.0
+    assert isinstance(namespace["ValueT"], TypeVar)
+    assert namespace["TIMEOUT"] is documented_symbols.TIMEOUT
     assert namespace["kept"] is documented_symbols.kept
     # Each name in a package's `__all__` is asked for twice, once by the import
     # machinery finding out whether it names a submodule and once by the wildcard
-    # import itself, so every alias warns more than once here. Which messages come
+    # import itself, so every symbol warns more than once here. Which messages come
     # out is the part worth asserting; how many times CPython looks them up is not.
     assert {str(warning.message) for warning in caught} == {
         "tests.warnings.documented_symbols.Decimal is deprecated. "
         "Use decimal.Decimal instead.",
         "tests.warnings.documented_symbols.Rational is deprecated and will be "
         "removed in v2.0.0. Use fractions.Fraction instead.",
+        "tests.warnings.documented_symbols.TIMEOUT_SECONDS is deprecated. "
+        "Use tests.warnings.documented_symbols.TIMEOUT instead.",
+        "tests.warnings.documented_symbols.ValueT is deprecated and will be "
+        "removed in v2.0.0. Define your own type variable instead.",
     }
 
 
@@ -513,6 +687,85 @@ def test_deprecated_aliases_refuses_a_module_target() -> None:
     with asserting_no_deprecations():
         with pytest.raises(TypeError):
             _ = module.path
+
+
+def test_deprecated_symbols_warns_and_returns_the_value() -> None:
+    """Test that reaching a symbol warns and gives its value, next to aliases."""
+    module = ModuleType("old_home_symbols")
+    module.__getattr__ = deprecated_symbols(  # type: ignore[method-assign]
+        module.__name__,
+        _DECIMAL,
+        DeprecatedSymbol("OLD", value=_SENTINEL, replacement="mypkg.NEW"),
+        DeprecatedSymbol("GONE", value=None, since="v1.2.3"),
+        DeprecatedSymbol(
+            "SAID", value=3, message="{old} is deprecated. Count by hand instead."
+        ),
+    )
+
+    with pytest.warns(DeprecationWarning) as caught:
+        assert module.OLD is _SENTINEL
+        assert module.GONE is None
+        assert module.SAID == 3
+        assert module.Decimal is decimal.Decimal
+
+    assert [str(warning.message) for warning in caught] == [
+        "old_home_symbols.OLD is deprecated. Use mypkg.NEW instead.",
+        "old_home_symbols.GONE is deprecated.",
+        "old_home_symbols.SAID is deprecated. Count by hand instead.",
+        "old_home_symbols.Decimal is deprecated. Use decimal.Decimal instead.",
+    ]
+    # stacklevel=2, so the warning is attributed to this file, not to the helper.
+    assert all(warning.filename == __file__ for warning in caught)
+
+
+@pytest.mark.parametrize(
+    "symbols",
+    [
+        (
+            DeprecatedSymbol("Decimal", value=1),
+            _DECIMAL,
+        ),
+        (
+            DeprecatedSymbol("OLD", value=1),
+            DeprecatedAlias("Older", new_name="OLD", since="v1.2.3"),
+        ),
+        (
+            DeprecatedSymbol("OLD", value=1),
+            DeprecatedAlias(
+                "Older", new_module="old_home_bad", new_name="OLD", since="v1.2.3"
+            ),
+        ),
+    ],
+    ids=[
+        "duplicate-name",
+        "alias-points-at-a-symbol",
+        "alias-points-at-a-symbol-by-module",
+    ],
+)
+def test_deprecated_symbols_rejects_a_bad_mix(
+    symbols: tuple[DeprecatedAlias | DeprecatedSymbol, ...],
+) -> None:
+    """Test that aliases and symbols are checked together.
+
+    They share the module's names, so they can't repeat one, and an alias pointing
+    at a deprecated symbol would warn twice and send users to something deprecated
+    too.
+    """
+    with pytest.raises(ValueError):
+        deprecated_symbols("old_home_bad", *symbols)
+
+
+def test_deprecated_symbols_refuses_a_module_value() -> None:
+    """Test that a symbol whose value is a module is refused when it is declared.
+
+    As for an alias landing on a module, `import old.sub` would still fail, since
+    the import system never asks a package's `__getattr__`.
+    """
+    with pytest.raises(TypeError, match="^the value of old_home_bad.path is the "):
+        deprecated_symbols(
+            "old_home_bad",
+            DeprecatedSymbol("path", value=sys.modules["os.path"], message="{old}"),
+        )
 
 
 def test_deprecated_aliases_is_a_deprecated_name_for_deprecated_symbols() -> None:

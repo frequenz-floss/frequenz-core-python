@@ -11,11 +11,14 @@ to silence warnings around a piece of code, without the side effect that
 common case of a library having to touch a symbol it deprecated itself.
 
 It also provides
-[`deprecated_aliases`][frequenz.core.warnings.deprecated_aliases], to keep the old
-import path of a symbol that moved to another module, or was renamed, working,
-warning whoever uses it, with a
-[`DeprecatedAlias`][frequenz.core.warnings.DeprecatedAlias] entry saying where it
-is now and since which version it is deprecated, and
+[`deprecated_symbols`][frequenz.core.warnings.deprecated_symbols], to keep
+module-level symbols that can't take a `@deprecated` decorator working, warning
+whoever uses them: a [`DeprecatedAlias`][frequenz.core.warnings.DeprecatedAlias]
+entry keeps the old import path of a symbol that moved to another module, or was
+renamed, saying where it is now, and a
+[`DeprecatedSymbol`][frequenz.core.warnings.DeprecatedSymbol] entry deprecates a
+symbol where it is, such as a type variable or a constant. Both say since which
+version they are deprecated. There is also
 [`asserting_no_warnings`][frequenz.core.warnings.asserting_no_warnings] with its
 [`asserting_no_deprecations`][frequenz.core.warnings.asserting_no_deprecations]
 shortcut, to check in a test that a piece of code doesn't warn.
@@ -61,14 +64,21 @@ With [`warnings.catch_warnings`][] in `convert()` the same loop shows the
 """
 
 from ._asserting import asserting_no_deprecations, asserting_no_warnings
-from ._deprecated_aliases import DeprecatedAlias, deprecated_aliases
+from ._deprecated_symbols import (
+    DeprecatedAlias,
+    DeprecatedSymbol,
+    deprecated_aliases,
+    deprecated_symbols,
+)
 from ._ignoring import ignoring_deprecations, ignoring_warnings
 
 __all__ = [
     "DeprecatedAlias",
+    "DeprecatedSymbol",
     "asserting_no_deprecations",
     "asserting_no_warnings",
     "deprecated_aliases",
+    "deprecated_symbols",
     "ignoring_deprecations",
     "ignoring_warnings",
 ]
